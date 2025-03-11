@@ -1,19 +1,18 @@
 #import pdfplumber
 import pymupdf
-import pandas as pd
+#import pandas as pd
 import re
 import json
 
 def import_pdf(path_to_pdf):
+    """Import a pdf and transform it into string
+
+    Args:
+        path_to_pdf (str): a path to the file
+
+    Returns:
+        str: all text in the pdf
     """
-    with pdfplumber.open(path_to_pdf) as pdf_file:
-        pdf_content = ""
-        for page in pdf_file.pages:
-            pdf_content += page.extract_text().strip()
-    if pdf_content != "":
-        print("Importation Complete")
-    return pdf_content
-"""
     doc = pymupdf.open(path_to_pdf)  # open a document
     text = ""
     for page in doc:  # iterate the document pages
@@ -21,6 +20,14 @@ def import_pdf(path_to_pdf):
     return text
 
 def sep_segment(book_string: str):
+    """Separate a interactive fiction's string into pieces
+
+    Args:
+        book_string (str): the interactive fiction's string
+
+    Returns:
+        dict: a dictionnary with segments's index as key and the segment's text
+    """
     book_string = book_string
     regex_sep = re.compile(r"(?<=\n)\s*(\d+)\s*\n")
     print(regex_sep)
@@ -47,8 +54,9 @@ def sep_segment(book_string: str):
 
 
 def parse_data(book_string: str):
-    book_string = book_string.lower()
-    regex_defi_link = re.compile(r"rendez[ -]vous .+(\d+)")
+    pass
+    """book_string = book_string.lower()
+    regex_defi_link = re.compile(r"rendez[ -]vous .+(\d+)")"""
 
 bonjour = import_pdf("Le manoir de lenfer.pdf")
 print(bonjour)
