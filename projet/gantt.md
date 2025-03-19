@@ -1,3 +1,4 @@
+```mermaid
 gantt
     title Ficus
     dateFormat  YYYY-MM-DD
@@ -36,4 +37,4 @@ gantt
     Présentation: crit, r1, 2025-04-30, 1d
     Soutenance: crit, r2, 2025-05-21, 1d
     Rapport: 1d
-
+```
