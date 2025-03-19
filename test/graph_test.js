@@ -80,7 +80,7 @@ cy_list = [{data: { id: -1}}]
 for(let i = 0; i<400;i++){
   cy_list.push({data: { id: String(i) }})
 }
-for(let i = 0; i<400;i++){
+for(let i = 0; i<600;i++){
   cy_list.push({data: { id: `e${String(i)}`, source: `${Math.round(Math.random()*399)}`, target: `${Math.round(Math.random()*399)}` }})
 }
 
@@ -94,7 +94,7 @@ var cy = cytoscape({
     {
       selector: 'node',
       style: {
-        'background-color': '#666',
+        'background-color': 'blue',
         'label': 'data(id)'
       }
     },
