@@ -2,7 +2,6 @@
 gantt
     title Ficus
     dateFormat  YYYY-MM-DD
-    Prototype Spec Minimale: milestone, 2025-04-02
 
     section Préparation
     Organisation           :a1, 2025-02-19, 30d
@@ -18,7 +17,7 @@ gantt
 
     section Programmation
     Définition standards: 1d
-
+    Prototype Spec Minimale: milestone, 2025-04-02
     L - Maquette: m1, 2025-03-01, 2025-03-26
     M & C - Prototype interface: 2025-03-15, 2025-03-26
     M & C - Interface: after m1, 14d
