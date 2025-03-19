@@ -1,10 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Ficus</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.28.1/cytoscape.min.js"></script>
     <style>
+        #cy {
+        width: 1200px;
+        height: 800px;
+        border: 1px solid #ccc;
+        margin: 20px auto;
+        /* Important: container must have a fixed height */
+        position: relative;
+        }
         h1{
             display: inline-block;
             background-color: yellow;
@@ -27,9 +36,9 @@
             border: 0.2vmin solid black;
         }
     </style>
-</head>
-<body>
+  </head>
+  <body>
+    <div id="cy"></div>
     <script src="graph_test.js"></script>
-    <div></div>
-</body>
+  </body>
 </html>
