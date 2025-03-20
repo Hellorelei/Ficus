@@ -7,22 +7,31 @@ async function getCSV(url) {
     let text_csv = await response.text();
     let lines = text_csv.split('\n');
     let headers = lines[0].split(',')
-    let result = []
+    let result = {}
     for (let i = 1; i < lines.length; i++) {
       const obj = {};
       const currentLine = lines[i].split(',');
 
       // Assurer que la ligne n'est pas vide
       if (currentLine.length === headers.length) {
-        for (let j = 0; j < headers.length; j++) {
-          if(currentLine[0]==""){
-
-          }
+        obj["id"]=currentLine[1]
+        for (let j = 2; j < headers.length; j++) {
           obj[headers[j].trim()] = currentLine[j].trim();
         }
-        result.push(obj);
-      }
+        if(currentLine[0]==""){
+          let k = i
+          while(lines[k].split(',')[0]==""){
+            k-=1;
+          }
+          let id = lines[k].split(',')[0] - 1
+          console.log(id)
+
+          // result[id]["to"].push(obj[headers[j].trim()=currentLine[j].trim()])
+        }else{
+          result[currentLine[0]]={"text":"", "to":[obj], "from":[], "tags":[]}
+        }
     }
+  }
     return result;
   } catch (error){
     console.error('Erreur lors de la récupération ou du traitement du CSV:', error);
@@ -52,6 +61,7 @@ function newTabOnClick(nodeID) {
   console.log("Salut" + nodeID)
   
   destroySideTab()
+
 
   const div = document.createElement("div");
     div.id = "sideTab" ;
@@ -109,6 +119,8 @@ let cy = cytoscape({
 cy.on('click', 'node', function(evt){
   console.log( 'clicked ' + this.id() );
   nodeID = this.id()
+  cy.nodes().style('background-color', '#FFFACD');
+  cy.nodes(`[id = "${nodeID}"]`).style('background-color', 'blue');
   newTabOnClick(nodeID)
 });
 
@@ -116,13 +128,16 @@ cy.on('click', 'node', function(evt){
 cy.on('click', function(event) {
   // Vérifie si l'élément cliqué est le fond (pas un node)
   if (event.target === cy) {
+      cy.nodes().style('background-color', '#FFFACD');
       destroySideTab();
+
   }
 });
 
 cy.on('click', 'node', function(event) {
   // Empêche l'exécution de maFonction si un node est cliqué
   event.stopPropagation();
+  
 });
 
 
