@@ -20,8 +20,8 @@ async function getCSV(url) {
     });
     let results = {}
     for (let i = 0; i < papa_results.length; i++) {
-      // En JS, les assignations d'un objet à une variable créent un pointeur en mémoire vers cette dernière
-      // Plutôt qu'une copie de ce dernier. Cette ligne permet d'en faire une copie de laquelle il sera possible de delete
+      // En JS, les assignations d'un objet à une variable créent un pointeur en mémoire vers celui-ci plutôt qu'une
+      // copie de ce dernier. Cette ligne permet d'en faire une copie, de laquelle il est possible de delete sans compromettre papa_results
       const obj = Object.assign({}, papa_results[i]);
       if(obj['numero_passage']==""){
         delete obj['numero_passage']
