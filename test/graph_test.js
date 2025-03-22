@@ -1,3 +1,5 @@
+const TAGS = {"biomes":"", "personnages":"", "actions":""}
+
 async function getCSV(url) {
   try {
     let response = await fetch(url);
@@ -5,39 +7,97 @@ async function getCSV(url) {
       throw new Error(`Erreur: ${response.status}`);
     }
     let text_csv = await response.text();
-    let lines = text_csv.split('\n');
-    let headers = lines[0].split(',')
-    let result = {}
-    for (let i = 1; i < lines.length; i++) {
-      const obj = {};
-      const currentLine = lines[i].split(',');
-
-      // Assurer que la ligne n'est pas vide
-      if (currentLine.length === headers.length) {
-        obj["id"]=currentLine[1]
-        for (let j = 2; j < headers.length; j++) {
-          obj[headers[j].trim()] = currentLine[j].trim();
+    // let papa_results = []
+    Papa.parse(text_csv, {
+      header:true,
+      skipEmptyLines: true, // Ignorer les lignes vides
+      complete: (results) => {
+        papa_results = results.data; // Afficher les données
+      },
+      error: (err) => {
+        console.error('Erreur lors du parsing du CSV:', err);
+      },
+    });
+    console.log(papa_results)
+    let results = {}
+    for (let i = 0; i < papa_results.length; i++) {
+      // En JS, les assignations d'un objet à une variable créent un pointeur en mémoire vers cette dernière
+      // Plutôt qu'une copie de ce dernier. Cette ligne permet d'en faire une copie de laquelle il sera possible de delete
+      const obj = Object.assign({}, papa_results[i]);
+      if(obj['numero_passage']==""){
+        delete obj['numero_passage']
+        let k = i-1
+        while(papa_results[k]['numero_passage']==""){
+          k-=1;
         }
-        if(currentLine[0]==""){
-          let k = i
-          while(lines[k].split(',')[0]==""){
-            k-=1;
-          }
-          let id = lines[k].split(',')[0] - 1
-          console.log(id)
-
-          // result[id]["to"].push(obj[headers[j].trim()=currentLine[j].trim()])
-        }else{
-          result[currentLine[0]]={"text":"", "to":[obj], "from":[], "tags":[]}
-        }
+        console.log(k)
+        console.log(papa_results)
+        let id = papa_results[k]['numero_passage']
+        console.log(id)
+        results[id]["to"] = obj
+      }else{
+        let id = papa_results[i]['numero_passage']
+        delete obj['numero_passage']
+        console.log(`Ajout : ${id}`)
+        results[id]={"text":"", "to":[obj], "from":[], "tags":TAGS}
+      }
     }
-  }
-    return result;
+    console.log(results)
+    //Problème lorsque le csv contient des retours à la lignes et des virgules
+    //Abandonné : utilisation de Papaparse
+
+    // let lines = text_csv.split('\n');
+    // let headers = lines[0].split(',')
+    // let result = {}
+    // for (let i = 1; i < lines.length; i++) {
+    //   const obj = {};
+    //   const currentLine = lines[i].split(',');
+
+    //   // Skip les lignes vides
+    //   if (currentLine.length === headers.length) {
+    //     obj["id"]=currentLine[1]
+    //     for (let j = 2; j < headers.length; j++) {
+    //       obj[headers[j].trim()] = currentLine[j].trim();
+    //     }
+    //     if(currentLine[0]==""){
+    //       let k = i
+    //       while(lines[k].split(',')[0]==""){
+    //         k-=1;
+    //       }
+    //       let id = lines[k].split(',')[0] - 1
+    //       console.log(id)
+    //       result[id]["to"].push(obj)
+    //     }else{
+    //       console.log(`Ajout : ${currentLine[0]}`)
+    //       result[currentLine[0]]={"text":"", "to":[obj], "from":[], "tags":TAGS}
+    //     }
+    // }
+  // }
+    return results;
   } catch (error){
     console.error('Erreur lors de la récupération ou du traitement du CSV:', error);
     return null;
   }
 };
+function createNodesFromDico(dico){
+  let nodeslist = []
+  for(let keys in data.keys){
+    nodeslist.push({data : {id: String(keys)}})
+  }
+  return nodeslist
+}
+function createEdgesFromDico(dico){
+  let edgeslist = []
+  for(let keys in data.keys){
+    edgeslist.push({data : {id: String(keys)}})
+  }
+  return nodeslist
+}
+function createCyFromDico(dico){
+  cy_list = []
+  cy_list.push(createNodesFromDico(dico))
+  cy_list.push(createEdgesFromDico(dico))
+}
 
 function createSampleCy(){
   cy_list = [{data: { id: -1}}]

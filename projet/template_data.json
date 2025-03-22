@@ -1,5 +1,5 @@
-[
-    { "1":
+{ 
+    "1":
     	{
     	    "text": "",
     	    "to" : [
@@ -14,9 +14,8 @@
     	            "actions" : [],
     	            "comment" : "possibilité d'ajouter d'autres tags : menu déroulant avec options: biome, personnage, actions et autre"
     	        }
-    	}
-    }
-    { "2":
+    	},
+    "2":
     	{
     	    "text": "",
     	    "to" : [{}],
@@ -29,5 +28,4 @@
     	            "comment" : "possibilité d'ajouter d'autres tags : menu déroulant avec options: biome, personnage, actions et autre"?
     	        }
     	}
-    }
-]
+}
