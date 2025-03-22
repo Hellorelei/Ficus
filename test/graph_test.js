@@ -18,7 +18,6 @@ async function getCSV(url) {
         console.error('Erreur lors du parsing du CSV:', err);
       },
     });
-    console.log(papa_results)
     let results = {}
     for (let i = 0; i < papa_results.length; i++) {
       // En JS, les assignations d'un objet à une variable créent un pointeur en mémoire vers cette dernière
@@ -30,11 +29,8 @@ async function getCSV(url) {
         while(papa_results[k]['numero_passage']==""){
           k-=1;
         }
-        console.log(k)
-        console.log(papa_results)
         let id = papa_results[k]['numero_passage']
-        console.log(id)
-        results[id]["to"] = obj
+        results[id]["to"].push(obj)
       }else{
         let id = papa_results[i]['numero_passage']
         delete obj['numero_passage']
@@ -79,24 +75,22 @@ async function getCSV(url) {
     return null;
   }
 };
-function createNodesFromDico(dico){
-  let nodeslist = []
-  for(let keys in data.keys){
-    nodeslist.push({data : {id: String(keys)}})
-  }
-  return nodeslist
-}
-function createEdgesFromDico(dico){
-  let edgeslist = []
-  for(let keys in data.keys){
-    edgeslist.push({data : {id: String(keys)}})
-  }
-  return nodeslist
-}
 function createCyFromDico(dico){
   cy_list = []
-  cy_list.push(createNodesFromDico(dico))
-  cy_list.push(createEdgesFromDico(dico))
+  for(let i = 1; i < Object.keys(dico)[0];i++){
+    cy_list.push({data: { id: String(i) }})
+  }
+  for(let keys in dico){
+    cy_list.push({data : {id: String(keys)}})
+  }
+  for(let keys in dico){
+    for (let i = 0; i < dico[keys]["to"].length; i++){
+      if(String(dico[keys]["to"][i]["sortie"]) != "x" && String(dico[keys]["to"][i]["sortie"]) != "v"){
+        cy_list.push({data : {id: `e${String(keys)}-${String(dico[keys]["to"][i]["sortie"])}`, source : String(keys), target : String(dico[keys]["to"][i]["sortie"])}})
+      }
+    }
+  }
+  return cy_list
 }
 
 function createSampleCy(){
@@ -129,75 +123,77 @@ function newTabOnClick(nodeID) {
     document.body.appendChild(div);
 }
 
-cy_list=createSampleCy()
-
-console.log("Bonjour")
-let csv = getCSV("A_COPIER_labyrinthe_de_la_mort - template_ldvelh.csv")
-console.log(csv)
-
-let cy = cytoscape({
-
-  container: document.getElementById('cy'), // container to render in
-
-  elements: cy_list,
-
-  style: [ // the stylesheet for the graph
-    {
-      selector: 'node',
-      style: {
-        'background-color': '#FFFACD',
-        'border-width':'1',
-        'border-color': 'black',
-        'border-opacity':'1',
-        'label': 'data(id)',
-        'text-valign':'center',
-        'text-halign':'center',
-        // 'font-size':10,
-        // 'font-family':'Serif'
-      }
-    },
-
-    {
-      selector: 'edge',
-      style: {
-        'width': 3,
-        'line-color': '#ccc',
-        'target-arrow-color': '#ccc',
-        'target-arrow-shape': 'triangle',
-        'curve-style': 'bezier'
-      }
-    }
-  ],
-
-  layout: {
-    name: 'cose',
-    rows: 1
-  }
-
-});
-//event listener on node click
-cy.on('click', 'node', function(evt){
-  console.log( 'clicked ' + this.id() );
-  nodeID = this.id()
-  cy.nodes().style('background-color', '#FFFACD');
-  cy.nodes(`[id = "${nodeID}"]`).style('background-color', 'blue');
-  newTabOnClick(nodeID)
-});
-
-
-cy.on('click', function(event) {
-  // Vérifie si l'élément cliqué est le fond (pas un node)
-  if (event.target === cy) {
-      cy.nodes().style('background-color', '#FFFACD');
-      destroySideTab();
-
-  }
-});
-
-cy.on('click', 'node', function(event) {
-  // Empêche l'exécution de maFonction si un node est cliqué
-  event.stopPropagation();
+async function main(params) {
+  let csv = await getCSV("A_COPIER_labyrinthe_de_la_mort - template_ldvelh.csv")
+  console.log(csv)
+  cy_list = await createCyFromDico(csv)
+  console.log(cy_list)
   
-});
+  let cy = cytoscape({
+
+    container: document.getElementById('cy'), // container to render in
+  
+    elements: cy_list,
+  
+    style: [ // the stylesheet for the graph
+      {
+        selector: 'node',
+        style: {
+          'background-color': '#FFFACD',
+          'border-width':'1',
+          'border-color': 'black',
+          'border-opacity':'1',
+          'label': 'data(id)',
+          'text-valign':'center',
+          'text-halign':'center',
+          // 'font-size':10,
+          // 'font-family':'Serif'
+        }
+      },
+  
+      {
+        selector: 'edge',
+        style: {
+          'width': 3,
+          'line-color': '#ccc',
+          'target-arrow-color': '#ccc',
+          'target-arrow-shape': 'triangle',
+          'curve-style': 'bezier'
+        }
+      }
+    ],
+  
+    layout: {
+      name: 'cose',
+      rows: 1
+    }
+  
+  });
+  //event listener on node click
+  cy.on('click', 'node', function(evt){
+    console.log( 'clicked ' + this.id() );
+    nodeID = this.id()
+    cy.nodes().style('background-color', '#FFFACD');
+    cy.nodes(`[id = "${nodeID}"]`).style('background-color', 'blue');
+    newTabOnClick(nodeID)
+  });
+  
+  
+  cy.on('click', function(event) {
+    // Vérifie si l'élément cliqué est le fond (pas un node)
+    if (event.target === cy) {
+        cy.nodes().style('background-color', '#FFFACD');
+        destroySideTab();
+  
+    }
+  });
+  
+  cy.on('click', 'node', function(event) {
+    // Empêche l'exécution de maFonction si un node est cliqué
+    event.stopPropagation();
+    
+  });
+}
+main()
 
 
