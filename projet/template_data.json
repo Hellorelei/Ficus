@@ -1,0 +1,31 @@
+{ 
+    "1":
+    	{
+    	    "text": "",
+    	    "to" : [
+    	    	{"id": 24, "object_necessaire": "epee"},
+    	    	{"id" : 34}
+    	    ],
+    	    "from" : [],
+    	    "tags" : 
+    	        {
+    	            "biome" : "",
+    	            "personnage" : [],
+    	            "actions" : [],
+    	            "comment" : "possibilité d'ajouter d'autres tags : menu déroulant avec options: biome, personnage, actions et autre"
+    	        }
+    	},
+    "2":
+    	{
+    	    "text": "",
+    	    "to" : [{}],
+    	    "from" : [],
+    	    "tags" : 
+    	        {
+    	            "biome" : "",
+    	            "personnage" : [],
+    	            "actions" : [],
+    	            "comment" : "possibilité d'ajouter d'autres tags : menu déroulant avec options: biome, personnage, actions et autre"?
+    	        }
+    	}
+}
