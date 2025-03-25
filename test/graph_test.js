@@ -1,13 +1,18 @@
-const TAGS = {"biomes":"", "personnages":"", "actions":""}
+// Avec une constante, tous les passages possèderaient la même instance de TAGS
+// Changer un tag d'un passage viendrait à changer tous les autres
+// const TAGS = {"biomes":"", "personnages":"", "actions":""}
 let cy_graph = null
 
 function propagation(passage_dico, passage){
   console.log(passage_dico)
   let to_list = passage_dico[String(passage)]["to"]
-  passage_dico[String(passage)]["tags"]["biome"]="forêt"
-  for(let i = 0; i < to_list.length-1; i++){
-    propagation(passage_dico, to_list[i]["sortie"])
-    cy_graph.nodes().style('background-color', '#d1258c');
+  passage_dico[String(passage)]["tags"]["biomes"]="montagne"
+  cy_graph.nodes(`#${passage}`).style('background-color', '#d1258c');
+  for(let i = 0; i < to_list.length; i++){
+    console.log(`passage : ${passage}, ${i}`)
+    if(to_list[i]["sortie"] !== "x" && passage_dico[to_list[i]["sortie"]]["tags"]["biomes"] == ""){
+      propagation(passage_dico, to_list[i]["sortie"])
+    }
   }
 }
 
@@ -46,7 +51,7 @@ async function getCSV(url) {
         let id = papa_results[i]['numero_passage']
         delete obj['numero_passage']
         console.log(`Ajout : ${id}`)
-        results[id]={"text":"", "to":[obj], "from":[], "tags":TAGS}
+        results[id]={"text":"", "to":[obj], "from":[], "tags":{"biomes":"", "personnages":"", "actions":""}}
       }
     }
     console.log(results)
@@ -92,6 +97,7 @@ async function getCSV(url) {
 function createCyElementsFromDico(dico){
   cy_list = []
   for(let i = 1; i < Object.keys(dico)[0];i++){
+    // dico[String(i)]={"text":"", "to":[], "from":[], "tags":{"biomes":"", "personnages":"", "actions":""}}
     cy_list.push({data: { id: String(i) }})
   }
   for(let keys in dico){
@@ -207,6 +213,7 @@ async function createGraphe(url="A_COPIER_labyrinthe_de_la_mort - template_ldvel
     event.stopPropagation();
     
   });
+  csv["262"]["tags"]["biomes"]="forêt"
   propagation(csv,310)
 }
 // gérer l'importation du CSV dans le graphe

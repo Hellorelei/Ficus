@@ -3,8 +3,8 @@
     	{
     	    "text": "",
     	    "to" : [
-    	    	{"id": 24, "object_necessaire": "epee"},
-    	    	{"id" : 34}
+    	    	{"sortie": 24, "object_necessaire": "epee"},
+    	    	{"sortie" : 34}
     	    ],
     	    "from" : [],
     	    "tags" : 
