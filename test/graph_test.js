@@ -11,7 +11,7 @@ function propagation(passage_dico, passage, biome){
   console.log(passage_dico)
   let to_list = passage_dico[String(passage)]["to"]
   passage_dico[String(passage)]["tags"]["biomes"]=biome
-  cy_graph.nodes(`#${passage}`).style('background-color', `hsl(${(BIOMES.indexOf(biome)*20)%255}, 50%, 50%)`);
+  cy_graph.nodes(`#${passage}`).style('background-color', `hsl(${(BIOMES.indexOf(biome)*20)%255}, 50%, 50%)`); // Couleur à modifier?
   for(let i = 0; i < to_list.length; i++){
     console.log(`passage : ${passage}, ${i}`)
     if(to_list[i]["sortie"] !== "x" && passage_dico[to_list[i]["sortie"]]["tags"]["biomes"] == ""){
@@ -163,7 +163,7 @@ async function createGraphe(url="A_COPIER_labyrinthe_de_la_mort - template_ldvel
       {
         selector: 'node',
         style: {
-          'background-color': '#FFFACD',
+          'background-color': '#FFFACD', // Couleur temporaire
           'border-width':'1',
           'border-color': 'black',
           'border-opacity':'1',
