@@ -2,16 +2,20 @@
 // Changer un tag d'un passage viendrait à changer tous les autres
 // const TAGS = {"biomes":"", "personnages":"", "actions":""}
 let cy_graph = null
+const BIOMES = []
 
-function propagation(passage_dico, passage){
+function propagation(passage_dico, passage, biome){
+  if (!(BIOMES.includes(biome))){
+    BIOMES.push(biome)
+  }
   console.log(passage_dico)
   let to_list = passage_dico[String(passage)]["to"]
-  passage_dico[String(passage)]["tags"]["biomes"]="montagne"
-  cy_graph.nodes(`#${passage}`).style('background-color', '#d1258c');
+  passage_dico[String(passage)]["tags"]["biomes"]=biome
+  cy_graph.nodes(`#${passage}`).style('background-color', `hsl(${(BIOMES.indexOf(biome)*20)%255}, 50%, 50%)`);
   for(let i = 0; i < to_list.length; i++){
     console.log(`passage : ${passage}, ${i}`)
     if(to_list[i]["sortie"] !== "x" && passage_dico[to_list[i]["sortie"]]["tags"]["biomes"] == ""){
-      propagation(passage_dico, to_list[i]["sortie"])
+      propagation(passage_dico, to_list[i]["sortie"], biome)
     }
   }
 }
@@ -214,7 +218,7 @@ async function createGraphe(url="A_COPIER_labyrinthe_de_la_mort - template_ldvel
     
   });
   csv["262"]["tags"]["biomes"]="forêt"
-  propagation(csv,310)
+  propagation(csv,310, "montagne")
 }
 // gérer l'importation du CSV dans le graphe
 document.addEventListener("DOMContentLoaded", function () {
