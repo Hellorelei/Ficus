@@ -1,4 +1,15 @@
 const TAGS = {"biomes":"", "personnages":"", "actions":""}
+let cy_graph = null
+
+function propagation(passage_dico, passage){
+  console.log(passage_dico)
+  let to_list = passage_dico[String(passage)]["to"]
+  passage_dico[String(passage)]["tags"]["biome"]="forêt"
+  for(let i = 0; i < to_list.length-1; i++){
+    propagation(passage_dico, to_list[i]["sortie"])
+    cy_graph.nodes().style('background-color', '#d1258c');
+  }
+}
 
 async function getCSV(url) {
   try {
@@ -39,6 +50,9 @@ async function getCSV(url) {
       }
     }
     console.log(results)
+    
+    
+    
     //Problème lorsque le csv contient des retours à la lignes et des virgules
     //Abandonné : utilisation de Papaparse
 
@@ -75,7 +89,7 @@ async function getCSV(url) {
     return null;
   }
 };
-function createCyFromDico(dico){
+function createCyElementsFromDico(dico){
   cy_list = []
   for(let i = 1; i < Object.keys(dico)[0];i++){
     cy_list.push({data: { id: String(i) }})
@@ -123,13 +137,13 @@ function newTabOnClick(nodeID) {
     document.body.appendChild(div);
 }
 
-async function main(params) {
-  let csv = await getCSV("A_COPIER_labyrinthe_de_la_mort - template_ldvelh.csv")
+async function createGraphe(url="A_COPIER_labyrinthe_de_la_mort - template_ldvelh.csv") {
+  let csv = await getCSV(url)
   console.log(csv)
-  cy_list = await createCyFromDico(csv)
+  cy_list = await createCyElementsFromDico(csv)
   console.log(cy_list)
   
-  let cy = cytoscape({
+  cy_graph = cytoscape({
 
     container: document.getElementById('cy'), // container to render in
   
@@ -170,30 +184,57 @@ async function main(params) {
   
   });
   //event listener on node click
-  cy.on('click', 'node', function(evt){
+  cy_graph.on('click', 'node', function(evt){
     console.log( 'clicked ' + this.id() );
     nodeID = this.id()
-    cy.nodes().style('background-color', '#FFFACD');
-    cy.nodes(`[id = "${nodeID}"]`).style('background-color', 'blue');
+    cy_graph.nodes().style('background-color', '#FFFACD');
+    cy_graph.nodes(`[id = "${nodeID}"]`).style('background-color', 'blue');
     newTabOnClick(nodeID)
   });
   
   
-  cy.on('click', function(event) {
+  cy_graph.on('click', function(event) {
     // Vérifie si l'élément cliqué est le fond (pas un node)
-    if (event.target === cy) {
-        cy.nodes().style('background-color', '#FFFACD');
+    if (event.target === cy_graph) {
+        cy_graph.nodes().style('background-color', '#FFFACD');
         destroySideTab();
   
     }
   });
   
-  cy.on('click', 'node', function(event) {
+  cy_graph.on('click', 'node', function(event) {
     // Empêche l'exécution de maFonction si un node est cliqué
     event.stopPropagation();
     
   });
+  propagation(csv,310)
 }
-main()
+// gérer l'importation du CSV dans le graphe
+document.addEventListener("DOMContentLoaded", function () {
+  const modal = document.getElementById("csvModal");
+  const openBtn = document.querySelector(".open-modal-btn");
+  const closeBtn = document.querySelector(".close-btn");
+  const fileInput = document.getElementById("csvFile");
+
+  let importedCSV = null; // Variable pour stocker le fichier CSV
+
+  openBtn.addEventListener("click", () => modal.style.display = "flex");
+  closeBtn.addEventListener("click", () => modal.style.display = "none");
+
+  fileInput.addEventListener("change", (event) => {
+      const file = event.target.files[0]; // Récupérer le fichier sélectionné
+      if (file && file.type === "text/csv") {
+          importedCSV = URL.createObjectURL(file); // Générer une URL temporaire du fichier
+          console.log("Fichier CSV chargé :", importedCSV);
+          createGraphe(importedCSV)
+          
+      } else {
+          alert("Veuillez sélectionner un fichier CSV valide !");
+          fileInput.value = ""; // Réinitialiser l'input si le fichier n'est pas un CSV
+      }
+  });
+});
 
 
+
+createGraphe()
