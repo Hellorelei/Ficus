@@ -38,9 +38,12 @@ gantt
     M & C - +Spec 3: espec_3, after espec_2, 5d
     M & C - +Spec 4: espec_4, after espec_3, 5d
 
-    section Rendu
+    section Présentation
     LORELEI - Keynote: 2025-04-12, 14d
     Présentation: crit, r1, 2025-04-30, 1d
     Soutenance: crit, r2, 2025-05-21, 1d
-    LORELEI Rapport: 2025-04-01, 40d
+    
+    section Rapport
+    LORELEI Rapport: 2025-03-26, 40d
+    LORELEI Compte-rendu entretiens: 2025-03-26, 7d
 ```

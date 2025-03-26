@@ -531,3 +531,9 @@ fabric.properties
 
 .DS_Store
 projet/.DS_Store
+.idea/FIcus.iml
+.idea/jsLibraryMappings.xml
+.idea/modules.xml
+.idea/vcs.xml
+projet/schemas/.$structure.drawio.bkp
+projet/schemas/.$ui.drawio.bkp

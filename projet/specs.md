@@ -14,4 +14,9 @@ Ficus est un logiciel d'aide à la numérisation de LDVELH (livre dont vous ête
 9. Ficus est disponible en tant qu'application type Electron.
 
 ## Version idéale
-TODO
+1. Simple database pour sauvegarder en local les données.
+
+## Bonus
+1. Version server-side.
+2. Avec docker-compose.
+3. Et træfik pour gérer une authentification via liens uniques.
