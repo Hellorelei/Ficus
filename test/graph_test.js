@@ -3,6 +3,7 @@
 // const TAGS = {"biomes":"", "personnages":"", "actions":""}
 let cy_graph = null
 const BIOMES = []
+SORTIES_INV = ["x","v","p","r"]
 
 function propagation(passage_dico, passage, biome){
   if (!(BIOMES.includes(biome))){
@@ -14,7 +15,7 @@ function propagation(passage_dico, passage, biome){
   cy_graph.nodes(`#${passage}`).style('background-color', `hsl(${(BIOMES.indexOf(biome)*20)%255}, 50%, 50%)`); // Couleur à modifier?
   for(let i = 0; i < to_list.length; i++){
     console.log(`passage : ${passage}, ${i}`)
-    if(to_list[i]["sortie"] !== "x" && passage_dico[to_list[i]["sortie"]]["tags"]["biomes"] == ""){
+    if(!SORTIES_INV.includes(to_list[i]["sortie"]) && passage_dico[to_list[i]["sortie"]]["tags"]["biomes"] == ""){
       propagation(passage_dico, to_list[i]["sortie"], biome)
     }
   }
@@ -126,7 +127,7 @@ function createCyElementsFromDico(dico){
   }
   for(let keys in dico){
     for (let i = 0; i < dico[keys]["to"].length; i++){
-      if(String(dico[keys]["to"][i]["sortie"]) != "x" && String(dico[keys]["to"][i]["sortie"]) != "v"){
+      if(!SORTIES_INV.includes(String(dico[keys]["to"][i]["sortie"])) && String(dico[keys]["to"][i]["sortie"]) != "v"){
         cy_list.push({data : {id: `e${String(keys)}-${String(dico[keys]["to"][i]["sortie"])}`, source : String(keys), target : String(dico[keys]["to"][i]["sortie"])}})
       }
     }
@@ -169,7 +170,7 @@ async function createGraphe(url="A_COPIER_labyrinthe_de_la_mort - template_ldvel
   console.log(csv)
   cy_list = await createCyElementsFromDico(csv)
   console.log(cy_list)
-  print(exportCSV(csv))
+  // print(exportCSV(csv))
   
   cy_graph = cytoscape({
 
@@ -264,6 +265,4 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 });
 
-
-
-createGraphe()
+createGraphe("pirate_des_sept_mers.csv")
