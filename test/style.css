@@ -1,11 +1,37 @@
-#cy {
-    width: 1200px;
-    height: 800px;
-    border: 1px solid #ccc;
-    margin: 20px auto;
-    /* Important: container must have a fixed height */
-    position: relative;
+html, body {
+    height: 100%;
+    margin: 0;
 }
+
+#cy {
+    background-color: #e9ecef; /* Juste pour visualiser l'espace */
+}
+
+/* MODALE */
+.modal {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 20px;
+    border: 1px solid #ccc;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    width: 300px;
+    text-align: center;
+}
+
+.modal.show {
+    display: block;
+}
+
+
+
+
+
+
 
 #sideTab {
     position: fixed;
@@ -54,7 +80,7 @@ div{
 }
 
 /* Fenêtre modale */
-.modal {
+/*.modal {
     display: none;
     position: fixed;
     top: 0;
@@ -86,3 +112,4 @@ div{
     cursor: pointer;
     border-radius: 5px;
 }
+

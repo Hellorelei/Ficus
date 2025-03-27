@@ -19,6 +19,23 @@ function propagation(passage_dico, passage, biome){
     }
   }
 }
+function exportCSV(obj){
+  let csv_txt = ["numero_passage",]
+  console.log(Object.keys(obj["1"]["to"][0]))
+  for(i in Object.keys(obj)){
+    for(let j = 0; j < obj[String(i)]["to"].length; j++){
+      let line_csv = [""]
+      if(j===0){
+        line_csv[0]=String(i)
+      }
+      for(k in Object.keys(obj[String(i)]["to"][0])){
+        line_csv.push(k)
+      }
+    }
+    csv_txt.push(line_csv)
+  }
+  return csv_txt
+}
 
 async function getCSV(url) {
   try {
@@ -152,6 +169,7 @@ async function createGraphe(url="A_COPIER_labyrinthe_de_la_mort - template_ldvel
   console.log(csv)
   cy_list = await createCyElementsFromDico(csv)
   console.log(cy_list)
+  print(exportCSV(csv))
   
   cy_graph = cytoscape({
 
