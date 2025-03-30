@@ -21,20 +21,33 @@ function propagation(passage_dico, passage, biome){
   }
 }
 function exportCSV(obj){
-  let csv_txt = ["numero_passage",]
-  console.log(Object.keys(obj["1"]["to"][0]))
-  for(i in Object.keys(obj)){
+  console.log(obj)
+  let csv_array = [["numero_passage",]]
+  csv_array[0] = csv_array[0].concat(Object.keys(obj["1"]["to"][0]))
+  for(i in obj){
     for(let j = 0; j < obj[String(i)]["to"].length; j++){
       let line_csv = [""]
       if(j===0){
-        line_csv[0]=String(i)
+        line_csv[0]=String([i])
       }
-      for(k in Object.keys(obj[String(i)]["to"][0])){
-        line_csv.push(k)
+      for(k in obj[String(i)]["to"][j]){
+        line_csv.push(obj[String(i)]["to"][j][k])
       }
+      csv_array.push(line_csv)
     }
-    csv_txt.push(line_csv)
   }
+  let csv_txt = ''
+  console.log(csv_array)
+  csv_array.forEach(row =>{
+    csv_txt += row.join(',') + '\n'
+  })
+  const blob = new Blob([csv_txt], { type: 'text/csv;charset=utf-8,' })
+  const objUrl = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.setAttribute('href', objUrl)
+  link.setAttribute('download', 'File.csv')
+  link.textContent = 'Click to Download'
+  document.body.appendChild(link)
   return csv_txt
 }
 
@@ -170,7 +183,7 @@ async function createGraphe(url="A_COPIER_labyrinthe_de_la_mort - template_ldvel
   console.log(csv)
   cy_list = await createCyElementsFromDico(csv)
   console.log(cy_list)
-  // print(exportCSV(csv))
+  console.log(exportCSV(csv))
   
   cy_graph = cytoscape({
 
@@ -237,7 +250,7 @@ async function createGraphe(url="A_COPIER_labyrinthe_de_la_mort - template_ldvel
     
   });
   csv["262"]["tags"]["biomes"]="forêt"
-  propagation(csv,310, "montagne")
+  // propagation(csv,310, "montagne")
 }
 // gérer l'importation du CSV dans le graphe
 document.addEventListener("DOMContentLoaded", function () {
