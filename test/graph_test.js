@@ -14,7 +14,9 @@ class passageTag{
   }
 }
 
-
+function refreshGraph(layout="cose"){
+  cy_graph.layout({name:layout}).run()
+}
 
 function lancerPropagation(passage_dico){
   function propagation(passage_dico, passage, biome){
