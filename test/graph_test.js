@@ -5,31 +5,65 @@ let cy_graph = null
 const LAST_DEFAULT_TAG = 30  //the number of default columns minus 1
 const BIOMES = []
 SORTIES_INV = ["x","v","p","r"]
+let CSV_OBJ = {}
 
-
-function propagation(passage_dico, passage, biome){
-  if (!(BIOMES.includes(biome))){
-    BIOMES.push(biome)
-  }
-  console.log(passage_dico)
-  let to_list = passage_dico[String(passage)]["to"]
-  passage_dico[String(passage)]["tags"]["biomes"]=biome
-  cy_graph.nodes(`#${passage}`).style('background-color', `hsl(${(BIOMES.indexOf(biome)*20)%255}, 50%, 50%)`); // Couleur à modifier?
-  for(let i = 0; i < to_list.length; i++){
-    console.log(`passage : ${passage}, ${i}`)
-    if(!SORTIES_INV.includes(to_list[i]["sortie"]) && passage_dico[to_list[i]["sortie"]]["tags"]["biomes"] == ""){
-      propagation(passage_dico, to_list[i]["sortie"], biome)
-    }
+class passageTag{
+  constructor(height, width) {
+    this.height = height;
+    this.width = width;
   }
 }
+
+
+
+function lancerPropagation(passage_dico){
+  function propagation(passage_dico, passage, biome){
+    if (!(BIOMES.includes(biome))){
+      BIOMES.push(biome)
+    }
+    console.log(passage_dico)
+    let to_list = passage_dico[String(passage)]["to"]
+    passage_dico[String(passage)]["tags"]["biomes"]["value"]=biome
+    passage_dico[String(passage)]["tags"]["biomes"]["propa"]=true
+    cy_graph.nodes(`#${passage}`).style('background-color', `hsl(${(BIOMES.indexOf(biome)*30)%255}, 70%, 65%)`); // Couleur à modifier?
+    for(let i = 0; i < to_list.length; i++){
+      console.log(`passage : ${passage}, ${i}`)
+      if(!SORTIES_INV.includes(to_list[i]["sortie"]) && !passage_dico[to_list[i]["sortie"]]["tags"]["biomes"]["entry"] && !passage_dico[to_list[i]["sortie"]]["tags"]["biomes"]["propa"] ){
+        propagation(passage_dico, to_list[i]["sortie"], biome)
+      }
+    }
+  }
+  entries = {}
+  for(key in passage_dico){
+    passage_dico[key]["tags"]["biomes"]["propa"]=false
+    if(passage_dico[key]["tags"]["biomes"]["entry"]){
+      entries[key] = passage_dico[key]["tags"]["biomes"]["value"]
+    }
+  }
+  for(id in entries){
+    console.log(`Propagation du biome ${entries[id]}`)
+    propagation(passage_dico, id, entries[id])
+  }
+}
+
 function exportCSV(obj){
   // Fonction pour échapper les valeurs contenant des virgules et faussant le csv sinon
-  const escapeCSVValue = (value) => {
-    if (typeof value === 'string' && value.includes(',')) {
-      return `"${value}"`;
+  function escapeCSVValue(value) {
+    // Si ce n'est pas une string, on retourne la valeur telle quelle
+    if (typeof value !== 'string') return value;
+    
+    // Si la valeur est déjà entourée de guillemets, on la retourne telle quelle
+    if (/^".*"$/.test(value)) return value;
+    
+    // Si la valeur contient des virgules ou des guillemets, on l'entoure de guillemets
+    // et on double les guillemets existants (règle CSV)
+    if (value.includes(',') || value.includes('"')) {
+      return `"${value.replace(/"/g, '""')}"`;
     }
+    
+    // Sinon, on retourne la valeur sans modification
     return value;
-  };
+  }
   // Initialise les headers
   let csv_array = [["numero_passage",]]
   csv_array[0] = csv_array[0].concat(Object.keys(obj["1"]["to"][0]))
@@ -48,10 +82,9 @@ function exportCSV(obj){
         line_csv[0]=String([i])
         // loop sur les tags, et le rajoute au csv
         for(l in obj[String(i)]["tags"]){
-          line_csv.push(escapeCSVValue(obj[String(i)]["tags"][l]))
+          line_csv.push(escapeCSVValue(obj[String(i)]["tags"][l]["value"]))
         }
       }
-      console.log(line_csv)
       csv_array.push(line_csv)
     }
   }
@@ -107,8 +140,7 @@ async function getCSV(url) {
         delete obj['numero_passage']
         let added_tags = {"biomes":"", "personnages":"", "actions":""}
         for(l in Object.fromEntries(Object.entries(obj).slice(LAST_DEFAULT_TAG, 100))){
-          console.log(l, obj[l])
-          added_tags[l] = obj[l]
+          added_tags[l] = {"value" : obj[l], "entry" : Boolean(obj[l])}
         }
         console.log(`Ajout : ${id}`)
         results[id]={"text":"", "to":[
@@ -206,12 +238,18 @@ function newTabOnClick(nodeID) {
 }
 
 async function createGraphe(url="A_COPIER_labyrinthe_de_la_mort - template_ldvelh.csv") {
-  let csv = await getCSV(url)
-  console.log(csv)
-  cy_list = await createCyElementsFromDico(csv)
+  CSV_OBJ = await getCSV(url)
+  console.log(CSV_OBJ)
+  cy_list = await createCyElementsFromDico(CSV_OBJ)
   console.log(cy_list)
-  csv["262"]["tags"]["biomes"]="forêt"
-  console.log(exportCSV(csv))
+  CSV_OBJ["172"]["tags"]["biomes"]={"value":"forêt","entry":true}
+  CSV_OBJ["162"]["tags"]["biomes"]={"value":"océan","entry":true}
+  CSV_OBJ["250"]["tags"]["biomes"]={"value":"vallée","entry":true}
+  CSV_OBJ["87"]["tags"]["biomes"]={"value":"glace","entry":true}
+  CSV_OBJ["301"]["tags"]["biomes"]={"value":"chemin","entry":true}
+  CSV_OBJ["402"]["tags"]["biomes"]={"value":"château","entry":true}
+  CSV_OBJ["53"]["tags"]["biomes"]={"value":"marais","entry":true}
+  console.log(exportCSV(CSV_OBJ))
   
   cy_graph = cytoscape({
 
@@ -277,8 +315,8 @@ async function createGraphe(url="A_COPIER_labyrinthe_de_la_mort - template_ldvel
     event.stopPropagation();
     
   });
-  console.log(csv)
-  // propagation(csv,310, "montagne")
+  console.log(CSV_OBJ)
+  lancerPropagation(CSV_OBJ)
 }
 // gérer l'importation du CSV dans le graphe
 document.addEventListener("DOMContentLoaded", function () {
@@ -306,4 +344,4 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 });
 
-createGraphe("pirate_des_sept_mers.csv")
+createGraphe("pirate_des_sept_mers_export.csv")

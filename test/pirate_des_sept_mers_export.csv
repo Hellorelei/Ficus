@@ -1,5 +1,5 @@
 numero_passage,sortie,sortie_choix_libre,description_fin,blessure,action,duree,environnement,illustration,competence_perdue,competence_acquise,competence_requise,objet_acquis,objet_perdu,objet_requis,code_perdu,code_acquis,sortie_etat_du_monde_acquis,etat_du_monde_requis,etoile_perdue,sortie_code_requis,sortie_code_perdu,sortie_competence_requise,sortie_etat_du_monde_acquis_1,sortie_etat_du_monde_requis,sortie_condition_requise,sortie_objet_acquis,sortie_objet_perdu,sortie_objet_requis,commentaire,doute,biomes,personnages,actions
-1,20,2,,,espionner,,bateau,,,,,,,,,,,,,,,,,,,,,,,,,,
+1,20,2,,,espionner,,bateau,,,,,,,,,,,,,,,,,,,,,,,,montagne,,
 ,39,2,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 ,172,2,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 2,421,0,,,naviguer,,océan,,,,,,,,,,,,,,,survie,,,,,,,,,,,
@@ -208,7 +208,7 @@ numero_passage,sortie,sortie_choix_libre,description_fin,blessure,action,duree,e
 105,86,0,,,"négocier, décider",,,,,,,,,,,,,,,,,mythologie,,,,,,,,,,,
 ,143,2,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 ,162,2,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-106,370,0,,,embarquer,,océan,""Soudain, une tâche blanche pointe à l'horizon : C'est un vaisseau sur le chemin de Port Leshand !"",,,,,,,,,,,,,,,,,,,,,La faute d'orthographe dans la description de l'illustration est présente dans le livre.,,,,
+106,370,0,,,embarquer,,océan,"Soudain, une tâche blanche pointe à l'horizon : C'est un vaisseau sur le chemin de Port Leshand !",,,,,,,,,,,,,,,,,,,,,La faute d'orthographe dans la description de l'illustration est présente dans le livre.,,,,
 107,145,2,,,"discuter, planifier",,taverne,,,,,,,,,,,,,,,,,,,,,,,,,,
 ,126,2,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 108,9,0,,,"se reposer, débarquer",jour (plusieurs),bateau,,,,,,,,,,,,,,,,,,,,,,,,,,
@@ -288,7 +288,7 @@ numero_passage,sortie,sortie_choix_libre,description_fin,blessure,action,duree,e
 144,177,0,,,"se cacher, observer",,île,,,,,,,,,,,,,,,,,,,,,,,,,,
 145,165,0,,,"travailler, voyager",,bateau,Une boussole et un compas sur une carte à moitié dépliée.,,,,doublon d'or (5),,,,,,,,,,,,,,,,,,,,,
 146,13,2,,,"se renseigner, menacer",,taverne,,,,,,,,,,,,,,,,,,,,,,,,,,
-,51,1,,,,,,,,,,,,,,,,,,,,astuce,,,,,,,,"Le texte indique "Ruse" en majuscule, comme lorsqu'il fait référence à une compétence. Or la compétence "Ruse" n'éxiste pas. En revanche, la compétence "Astuce" éxiste. J'ai donc indiqueé "Astuce" en compétence requise."
+,51,1,,,,,,,,,,,,,,,,,,,,astuce,,,,,,,,"Le texte indique ""Ruse"" en majuscule, comme lorsqu'il fait référence à une compétence. Or la compétence ""Ruse"" n'éxiste pas. En revanche, la compétence ""Astuce"" éxiste. J'ai donc indiqueé ""Astuce"" en compétence requise."
 ,32,1,,,,,,,,,,,,,,,,,,,,agilité,,,,,,,,
 147,223,0,,,manipuler,,taverne,,,,,,,,,,,,,,,,,,,,,,,,,,
 148,337,0,,,voyager,nuit (1),océan,,,,,,,,,,,,,,,,,,,,,,,"Ici la nuit compte pour tout l'épisode chez Neptune, conservons-nous ici cette mention temporel ou non ?",,,
@@ -505,7 +505,7 @@ numero_passage,sortie,sortie_choix_libre,description_fin,blessure,action,duree,e
 259,26,0,,,"réparer, discuter",,océan,,,,,,,,,,,,,,,,,,,,,,,,,,
 260,244,0,,,négocier,,,,,,,lettre de route,,,,Mammon,,,,,,,,,,,,,,,,,
 261,184,0,,,"discuter, se déplacer, invoquer",,ville,,,,,,navire dans une bouteille,,,,,,,,,,,,,,,,,,,,
-262,281,2,,,"observer, discuter",,,,,,,,,,,,,,,,,,,,,,,,,,forêt,,
+262,281,2,,,"observer, discuter",,,,,,,,,,,,,,,,,,,,,,,,,,,,
 ,72,2,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 263,16,0,,,"incanter, observer, fuir",,océan,,,,,,éventail noir,,,,,,,,,,,,,,,,,,,,
 264,x,0,transformation en mort-vivant,,mourir,,,,,,,,,,,,,,,,,,,,,,,,,,,,
