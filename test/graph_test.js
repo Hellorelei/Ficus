@@ -2,8 +2,10 @@
 // Changer un tag d'un passage viendrait à changer tous les autres
 // const TAGS = {"biomes":"", "personnages":"", "actions":""}
 let cy_graph = null
+const LAST_DEFAULT_TAG = 30  //the number of default columns minus 1
 const BIOMES = []
 SORTIES_INV = ["x","v","p","r"]
+
 
 function propagation(passage_dico, passage, biome){
   if (!(BIOMES.includes(biome))){
@@ -21,18 +23,35 @@ function propagation(passage_dico, passage, biome){
   }
 }
 function exportCSV(obj){
-  console.log(obj)
+  // Fonction pour échapper les valeurs contenant des virgules et faussant le csv sinon
+  const escapeCSVValue = (value) => {
+    if (typeof value === 'string' && value.includes(',')) {
+      return `"${value}"`;
+    }
+    return value;
+  };
+  // Initialise les headers
   let csv_array = [["numero_passage",]]
   csv_array[0] = csv_array[0].concat(Object.keys(obj["1"]["to"][0]))
+  csv_array[0] = csv_array[0].concat(Object.keys(obj["1"]["tags"]))
+  // loop sur l'objet de données
   for(i in obj){
+    // loop sur les sorties / lignes
     for(let j = 0; j < obj[String(i)]["to"].length; j++){
       let line_csv = [""]
+      // loop sur le dico des sorties
+      for(k in obj[String(i)]["to"][j]){
+        line_csv.push(escapeCSVValue(obj[String(i)]["to"][j][k]));
+      }
+      // rajoute le numéro de passage uniquement si c'est la 1ère sortie
       if(j===0){
         line_csv[0]=String([i])
+        // loop sur les tags, et le rajoute au csv
+        for(l in obj[String(i)]["tags"]){
+          line_csv.push(escapeCSVValue(obj[String(i)]["tags"][l]))
+        }
       }
-      for(k in obj[String(i)]["to"][j]){
-        line_csv.push(obj[String(i)]["to"][j][k])
-      }
+      console.log(line_csv)
       csv_array.push(line_csv)
     }
   }
@@ -81,12 +100,20 @@ async function getCSV(url) {
           k-=1;
         }
         let id = papa_results[k]['numero_passage']
-        results[id]["to"].push(obj)
+        results[id]["to"].push(Object.fromEntries(Object.entries(obj).slice(0, LAST_DEFAULT_TAG)))
+
       }else{
         let id = papa_results[i]['numero_passage']
         delete obj['numero_passage']
+        let added_tags = {"biomes":"", "personnages":"", "actions":""}
+        for(l in Object.fromEntries(Object.entries(obj).slice(LAST_DEFAULT_TAG, 100))){
+          console.log(l, obj[l])
+          added_tags[l] = obj[l]
+        }
         console.log(`Ajout : ${id}`)
-        results[id]={"text":"", "to":[obj], "from":[], "tags":{"biomes":"", "personnages":"", "actions":""}}
+        results[id]={"text":"", "to":[
+          Object.fromEntries(Object.entries(obj).slice(0, LAST_DEFAULT_TAG))
+        ], "from":[], "tags": added_tags}
       }
     }
     console.log(results)
@@ -183,6 +210,7 @@ async function createGraphe(url="A_COPIER_labyrinthe_de_la_mort - template_ldvel
   console.log(csv)
   cy_list = await createCyElementsFromDico(csv)
   console.log(cy_list)
+  csv["262"]["tags"]["biomes"]="forêt"
   console.log(exportCSV(csv))
   
   cy_graph = cytoscape({
@@ -249,7 +277,7 @@ async function createGraphe(url="A_COPIER_labyrinthe_de_la_mort - template_ldvel
     event.stopPropagation();
     
   });
-  csv["262"]["tags"]["biomes"]="forêt"
+  console.log(csv)
   // propagation(csv,310, "montagne")
 }
 // gérer l'importation du CSV dans le graphe
