@@ -101,8 +101,17 @@ function exportCSV(obj){
   link.setAttribute('href', objUrl)
   link.setAttribute('download', 'File.csv')
   link.textContent = 'Click to Download'
-  document.body.appendChild(link)
+  
+  // Trouver l'élément avec l'ID 'downloadCSV' et y ajouter le lien
+  const downloadCSVButton = document.getElementById('downloadCSV');
+  if (downloadCSVButton) {
+    downloadCSVButton.addEventListener('click', () => {
+      link.click();  // Simuler le clic sur le lien pour télécharger
+    });
+  }
+  
   return csv_txt
+  
 }
 
 async function getCSV(url) {

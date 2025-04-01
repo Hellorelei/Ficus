@@ -7,25 +7,6 @@ html, body {
     background-color: #e9ecef; /* Juste pour visualiser l'espace */
 }
 
-/* MODALE */
-.modal {
-    display: none;
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: white;
-    padding: 20px;
-    border: 1px solid #ccc;
-    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
-    z-index: 1000;
-    width: 300px;
-    text-align: center;
-}
-
-.modal.show {
-    display: block;
-}
 
 
 
@@ -66,7 +47,7 @@ div{
     border: 0.2vmin solid black;
 }
 
-/* Bouton en haut à gauche */
+/* Bouton en haut à gauche 
 .open-modal-btn {
     position: fixed;
     top: 10px;
@@ -77,7 +58,7 @@ div{
     border: none;
     cursor: pointer;
     border-radius: 5px;
-}
+}*/
 
 /* Fenêtre modale */
 /*.modal {
@@ -91,25 +72,42 @@ div{
     justify-content: center;
     align-items: center;
 }
+*/
 
-/* Contenu de la fenêtre */
+/* Style pour la fenêtre modale */
 .modal-content {
-    background: white;
+    border-radius: 8px;
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
     padding: 20px;
-    width: 50%;
-    max-width: 500px;
-    text-align: center;
-    border-radius: 10px;
-}
-
-/* Bouton de fermeture */
-.close-btn {
-    margin-top: 10px;
-    padding: 10px;
-    background: red;
+  }
+  
+  .modal-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #ddd;
+    padding: 15px;
+  }
+  
+  .modal-title {
+    font-size: 1.25rem;
+    color: #007bff;
+  }
+  
+  .modal-body {
+    font-size: 1rem;
+  }
+  
+  .modal-footer {
+    border-top: 1px solid #ddd;
+    padding-top: 10px;
+  }
+  
+  .close-btn {
+    background-color: #6c757d;
     color: white;
-    border: none;
-    cursor: pointer;
-    border-radius: 5px;
-}
+    padding: 8px 16px;
+  }
+  
+  .close-btn:hover {
+    background-color: #5a6268;
+  }
 
