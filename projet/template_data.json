@@ -22,7 +22,7 @@
     	    "from" : [],
     	    "tags" : 
     	        {
-    	            "biome" : "",
+    	            "biome" : {"value": "", "entry": true },
     	            "personnage" : [],
     	            "actions" : [],
     	            "comment" : "possibilité d'ajouter d'autres tags : menu déroulant avec options: biome, personnage, actions et autre"?
