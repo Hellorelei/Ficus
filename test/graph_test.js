@@ -2,7 +2,7 @@
 // Changer un tag d'un passage viendrait à changer tous les autres
 // const TAGS = {"biomes":"", "personnages":"", "actions":""}
 let cy_graph = null
-const LAST_DEFAULT_TAG = 30  //the number of default columns minus 1
+const LAST_DEFAULT_TAG = 31  //the number of default columns
 const BIOMES = []
 SORTIES_INV = ["x","v","p","r"]
 let CSV_OBJ = {}
@@ -27,7 +27,9 @@ function lancerPropagation(passage_dico){
     let to_list = passage_dico[String(passage)]["to"]
     passage_dico[String(passage)]["tags"]["biomes"]["value"]=biome
     passage_dico[String(passage)]["tags"]["biomes"]["propa"]=true
-    cy_graph.nodes(`#${passage}`).style('background-color', `hsl(${(BIOMES.indexOf(biome)*30)%255}, 70%, 65%)`); // Couleur à modifier?
+    requestAnimationFrame(()=>{
+      cy_graph.nodes(`#${passage}`).style('background-color', `hsl(${(BIOMES.indexOf(biome)*30)%255}, 70%, 65%)`); // Couleur à modifier?
+    })
     for(let i = 0; i < to_list.length; i++){
       console.log(`passage : ${passage}, ${i}`)
       if(!SORTIES_INV.includes(to_list[i]["sortie"]) && !passage_dico[to_list[i]["sortie"]]["tags"]["biomes"]["entry"] && !passage_dico[to_list[i]["sortie"]]["tags"]["biomes"]["propa"] ){
@@ -35,17 +37,27 @@ function lancerPropagation(passage_dico){
       }
     }
   }
-  entries = {}
-  for(key in passage_dico){
-    passage_dico[key]["tags"]["biomes"]["propa"]=false
-    if(passage_dico[key]["tags"]["biomes"]["entry"]){
-      entries[key] = passage_dico[key]["tags"]["biomes"]["value"]
-    }
-  }
-  for(id in entries){
-    console.log(`Propagation du biome ${entries[id]}`)
-    propagation(passage_dico, id, entries[id])
-  }
+  const entries = Object.keys(passage_dico)
+    .filter(key => passage_dico[key].tags?.biomes?.entry)
+    .map(key => ({ id: key, biome: passage_dico[key].tags.biomes.value }));
+  
+    const uniqueBiomes = new Set(BIOMES);
+
+  requestAnimationFrame(()=>{
+    entries.forEach(entry => {
+      if (!uniqueBiomes.has(entry.biome)) {
+        uniqueBiomes.add(entry.biome);
+        BIOMES.push(entry.biome);
+      }
+      propagation(passage_dico, entry.id, entry.biome);
+    })
+  })
+
+
+  // for(id in entries){
+  //   console.log(`Propagation du biome ${entries[id]}`)
+  //   propagation(passage_dico, id, entries[id])
+  // }
 }
 
 function exportCSV(obj){
@@ -118,11 +130,14 @@ function exportCSV(obj){
 async function getCSV(url) {
   try {
     let response = await fetch(url);
+
     if (!response.ok) {
       throw new Error(`Erreur: ${response.status}`);
     }
+
     let text_csv = await response.text();
     // let papa_results = []
+
     Papa.parse(text_csv, {
       header:true,
       skipEmptyLines: true, // Ignorer les lignes vides
@@ -133,73 +148,43 @@ async function getCSV(url) {
         console.error('Erreur lors du parsing du CSV:', err);
       },
     });
-    let results = {}
-    for (let i = 0; i < papa_results.length; i++) {
-      // En JS, les assignations d'un objet à une variable créent un pointeur en mémoire vers celui-ci plutôt qu'une
-      // copie de ce dernier. Cette ligne permet d'en faire une copie, de laquelle il est possible de delete sans compromettre papa_results
-      const obj = Object.assign({}, papa_results[i]);
-      if(obj['numero_passage']==""){
-        delete obj['numero_passage']
-        let k = i-1
-        while(papa_results[k]['numero_passage']==""){
-          k-=1;
-        }
-        let id = papa_results[k]['numero_passage']
-        results[id]["to"].push(Object.fromEntries(Object.entries(obj).slice(0, LAST_DEFAULT_TAG)))
 
-      }else{
-        let id = papa_results[i]['numero_passage']
-        delete obj['numero_passage']
-        let added_tags = {"biomes":"", "personnages":"", "actions":""}
+    let results = {}
+    let lastValidId = null
+
+    for (let i = 0; i < papa_results.length; i++) {
+      let obj = papa_results[i]
+      const id = obj.numero_passage || lastValidId
+
+      if (!results[id]){
+        results[id] = {
+          text: "",
+          to: [],
+          from: [],
+          tags: { biomes: "", personnages: "", actions: "" }
+        };
+      }
+
+      if(obj.numero_passage){
+        lastValidId = obj.numero_passage
+        // let added_tags = {"biomes":"", "personnages":"", "actions":""}
         for(l in Object.fromEntries(Object.entries(obj).slice(LAST_DEFAULT_TAG, 100))){
-          added_tags[l] = {"value" : obj[l], "entry" : Boolean(obj[l])}
+          results[id].tags[l] = {"value" : obj[l], "entry" : Boolean(obj[l])}
         }
-        console.log(`Ajout : ${id}`)
-        results[id]={"text":"", "to":[
-          Object.fromEntries(Object.entries(obj).slice(0, LAST_DEFAULT_TAG))
-        ], "from":[], "tags": added_tags}
+        results[id]["to"].push(Object.fromEntries(Object.entries(obj).slice(1, LAST_DEFAULT_TAG)))
+      }else{
+        results[id]["to"].push(Object.fromEntries(Object.entries(obj).slice(1, LAST_DEFAULT_TAG)))
       }
     }
     console.log(results)
-    
-    
-    
-    //Problème lorsque le csv contient des retours à la lignes et des virgules
-    //Abandonné : utilisation de Papaparse
-
-    // let lines = text_csv.split('\n');
-    // let headers = lines[0].split(',')
-    // let result = {}
-    // for (let i = 1; i < lines.length; i++) {
-    //   const obj = {};
-    //   const currentLine = lines[i].split(',');
-
-    //   // Skip les lignes vides
-    //   if (currentLine.length === headers.length) {
-    //     obj["id"]=currentLine[1]
-    //     for (let j = 2; j < headers.length; j++) {
-    //       obj[headers[j].trim()] = currentLine[j].trim();
-    //     }
-    //     if(currentLine[0]==""){
-    //       let k = i
-    //       while(lines[k].split(',')[0]==""){
-    //         k-=1;
-    //       }
-    //       let id = lines[k].split(',')[0] - 1
-    //       console.log(id)
-    //       result[id]["to"].push(obj)
-    //     }else{
-    //       console.log(`Ajout : ${currentLine[0]}`)
-    //       result[currentLine[0]]={"text":"", "to":[obj], "from":[], "tags":TAGS}
-    //     }
-    // }
-  // }
     return results;
+
   } catch (error){
     console.error('Erreur lors de la récupération ou du traitement du CSV:', error);
     return null;
   }
 };
+
 function createCyElementsFromDico(dico){
   cy_list = []
   for(let i = 1; i < Object.keys(dico)[0];i++){
@@ -250,6 +235,14 @@ function newTabOnClick(nodeID) {
 }
 
 async function createGraphe(url="A_COPIER_labyrinthe_de_la_mort - template_ldvelh.csv") {
+  if (cy_graph) {
+    cy_graph.destroy();
+    cy_graph = null;
+  }
+
+  // Libérer la mémoire
+  CSV_OBJ = {};
+  BIOMES.length = 0;
   CSV_OBJ = await getCSV(url)
   console.log(CSV_OBJ)
   cy_list = await createCyElementsFromDico(CSV_OBJ)
