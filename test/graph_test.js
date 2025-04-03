@@ -67,9 +67,10 @@ function exportCSV(obj){
     return value;
   }
   // Initialise les headers
+  const first_key = Object.keys(obj)[0]
   let csv_array = [["numero_passage",]]
-  csv_array[0] = csv_array[0].concat(Object.keys(obj["1"]["to"][0]))
-  csv_array[0] = csv_array[0].concat(Object.keys(obj["1"]["tags"]))
+  csv_array[0] = csv_array[0].concat(Object.keys(obj[first_key]["to"][0]))
+  csv_array[0] = csv_array[0].concat(Object.keys(obj[first_key]["tags"]))
   // loop sur l'objet de données
   for(i in obj){
     // loop sur les sorties / lignes

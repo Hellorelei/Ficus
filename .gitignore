@@ -537,3 +537,4 @@ projet/.DS_Store
 .idea/vcs.xml
 projet/schemas/.$structure.drawio.bkp
 projet/schemas/.$ui.drawio.bkp
+test/.vscode/settings.json
