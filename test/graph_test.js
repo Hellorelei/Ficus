@@ -41,7 +41,9 @@ function lancerPropagation(passage_dico){
     .filter(key => passage_dico[key].tags?.biomes?.entry)
     .map(key => ({ id: key, biome: passage_dico[key].tags.biomes.value }));
   
-    const uniqueBiomes = new Set(BIOMES);
+  console.log(entries)
+
+  const uniqueBiomes = new Set(BIOMES);
 
   requestAnimationFrame(()=>{
     entries.forEach(entry => {
@@ -161,7 +163,7 @@ async function getCSV(url) {
           text: "",
           to: [],
           from: [],
-          tags: { biomes: "", personnages: "", actions: "" }
+          tags: { biomes: {}, personnages: {}, actions: {} }
         };
       }
 
@@ -321,27 +323,44 @@ async function createGraphe(url="A_COPIER_labyrinthe_de_la_mort - template_ldvel
     
   });
   console.log(CSV_OBJ)
+  const progressBar = document.querySelector(".progress-bar");
+  progressBar.style.width = "64%";
+  progressBar.innerHTML = "64%"
   lancerPropagation(CSV_OBJ)
+
 }
 // gérer l'importation du CSV dans le graphe
 document.addEventListener("DOMContentLoaded", function () {
   const modal = document.getElementById("csvModal");
   const openBtn = document.querySelector(".open-modal-btn");
   const closeBtn = document.querySelector(".close-btn");
+  const closeCross = document.querySelector(".btn-close");
   const fileInput = document.getElementById("csvFile");
+  const progress = document.querySelector(".progress");
+  const progressBar = document.querySelector(".progress-bar");
 
   let importedCSV = null; // Variable pour stocker le fichier CSV
 
   openBtn.addEventListener("click", () => modal.style.display = "flex");
   closeBtn.addEventListener("click", () => modal.style.display = "none");
+  closeCross.addEventListener("click", () => modal.style.display = "none");
 
   fileInput.addEventListener("change", (event) => {
       const file = event.target.files[0]; // Récupérer le fichier sélectionné
       if (file && file.type === "text/csv") {
-          importedCSV = URL.createObjectURL(file); // Générer une URL temporaire du fichier
-          console.log("Fichier CSV chargé :", importedCSV);
-          createGraphe(importedCSV)
-          
+        // modal.style.display = "none"
+        importedCSV = URL.createObjectURL(file); // Générer une URL temporaire du fichier
+        console.log("Fichier CSV chargé :", importedCSV);
+        progress.style.display = "flex";
+        progressBar.style.display = "flex";
+        createGraphe(importedCSV).then(()=>{
+          progressBar.style.width = "89%";
+          progressBar.innerHTML = "89%"
+          setTimeout(() => {
+            progressBar.style.width = "100%";
+            progressBar.innerHTML = "100%"
+          }, 3000);
+        })
       } else {
           alert("Veuillez sélectionner un fichier CSV valide !");
           fileInput.value = ""; // Réinitialiser l'input si le fichier n'est pas un CSV
