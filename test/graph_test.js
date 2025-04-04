@@ -19,6 +19,7 @@ function refreshGraph(layout="cose"){
 }
 
 function lancerPropagation(passage_dico){
+  // A modifier pour passer tout en false les propas
   function propagation(passage_dico, passage, biome){
     if (!(BIOMES.includes(biome))){
       BIOMES.push(biome)
@@ -35,6 +36,9 @@ function lancerPropagation(passage_dico){
       }
     }
   }
+  for(key in passage_dico){
+    passage_dico[key]["tags"]["biomes"]["propa"]=false
+  }
   const entries = Object.keys(passage_dico)
     .filter(key => passage_dico[key].tags?.biomes?.entry)
     .map(key => ({ id: key, biome: passage_dico[key].tags.biomes.value }));
@@ -47,6 +51,7 @@ function lancerPropagation(passage_dico){
         uniqueBiomes.add(entry.biome);
         BIOMES.push(entry.biome);
       }
+      console.log(`Propagation du biome ${entry}`)
       propagation(passage_dico, entry.id, entry.biome);
     })
   })
@@ -336,6 +341,7 @@ async function createGraphe(url="A_COPIER_labyrinthe_de_la_mort - template_ldvel
 // gérer l'importation du CSV dans le graphe
 document.addEventListener("DOMContentLoaded", function () {
   let isImportating = false
+  const propaBtn = document.getElementById("propaBtn");
   const modal = document.getElementById("csvModal");
   const openBtn = document.querySelector(".open-modal-btn");
   const closeBtn = document.querySelector(".close-btn");
@@ -352,6 +358,9 @@ document.addEventListener("DOMContentLoaded", function () {
       modal.style.display = "flex"
     }
   });
+  propaBtn.addEventListener("click",()=>{
+    lancerPropagation(CSV_OBJ)
+  })
   closeBtn.addEventListener("click", () => {
     if(!isImportating){
       modal.style.display = "none"
