@@ -18,12 +18,17 @@
     <div class="container-fluid">
        <div class="d-flex justify-content-between">
           <!-- Boutons à gauche (vide pour l'alignement) -->
-          <div></div> 
+          <div class="top-0 end-0 p-1" style="z-index: 1000;">
+            <div class="input-group">
+              <input type="text" id="cy-search" class="form-control" placeholder="Rechercher un nœud (Ctrl+F)">
+              <button id="cy-search-clear" class="btn btn-outline-danger">×</button>
+            </div>
+          </div>
   
           <!-- 4 Boutons au centre -->
           <div class="d-flex gap-2">
               <button id="propaBtn" class="btn btn-secondary">Propager biomes</button>
-              <button class="btn btn-secondary">Bouton 2</button>
+              <button id="refreshBtn" class="btn btn-secondary">⟳</button>
               <button class="btn btn-secondary">Bouton 3</button>
               <button class="btn btn-secondary">Bouton 4</button>
           </div>

@@ -18,6 +18,82 @@ function refreshGraph(layout="cose"){
   cy_graph.layout({name:layout}).run()
 }
 
+function initNodeSearch() {
+  cy_graph.style()
+    .selector('.highlighted-node')
+    .style({
+      'border-width': 3,
+      'border-color': '#FF5722',
+      'transition-property': 'border-width, border-color',
+      'transition-duration': '0.3s'
+    })
+    .update(); // Important pour appliquer les changements
+  // Crée l'interface de recherche
+  const searchInput = document.getElementById('cy-search');
+  const searchClear = document.getElementById('cy-search-clear');
+
+  // Raccourci Ctrl+F
+  document.addEventListener('keydown', (e) => {
+    if (e.ctrlKey && e.key === 'f') {
+      e.preventDefault();
+      searchInput.focus();
+      searchInput.select();
+    }
+  });
+
+  // Recherche lors de la frappe (avec délai de 300ms)
+  let searchTimeout;
+  searchInput.addEventListener('input', () => {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+      searchNodeById(searchInput.value.trim());
+    }, 300);
+  });
+
+  // Recherche par Entrée
+  searchInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+      searchNodeById(searchInput.value.trim());
+    }
+  });
+
+  // Nettoyage
+  searchClear.addEventListener('click', () => {
+    searchInput.value = '';
+    clearHighlight();
+  });
+
+  // Fonction principale de recherche
+  function searchNodeById(nodeId) {
+    clearHighlight();
+    
+    if (!nodeId) return;
+    
+    const node = cy_graph.$(`#${nodeId}`);
+    
+    if (node.length > 0) {
+      // Style de surbrillance
+      node.addClass('highlighted-node');
+      cy_graph.animate({
+        center: { eles: node },
+        zoom: Math.min(cy_graph.zoom() * 1.2, 2), // Zoom limité à 2x
+        duration: 300
+      });
+      // Feedback visuel
+      searchInput.classList.add('is-valid');
+      searchInput.classList.remove('is-invalid');
+    } else {
+      searchInput.classList.add('is-invalid');
+      searchInput.classList.remove('is-valid');
+    }
+  }
+
+  function clearHighlight() {
+    cy_graph.nodes().removeClass('highlighted-node');
+    searchInput.classList.remove('is-valid', 'is-invalid');
+  }
+}
+
 function lancerPropagation(passage_dico){
   // A modifier pour passer tout en false les propas
   function propagation(passage_dico, passage, biome){
@@ -26,32 +102,29 @@ function lancerPropagation(passage_dico){
     }
     let to_list = passage_dico[String(passage)]["to"]
     passage_dico[String(passage)]["tags"]["biomes"]["value"]=biome
-    passage_dico[String(passage)]["tags"]["biomes"]["propa"]=true
+    visited.add(passage)
     requestAnimationFrame(()=>{
       cy_graph.nodes(`#${passage}`).style('background-color', `hsl(${(BIOMES.indexOf(biome)*30)%255}, 70%, 65%)`); // Couleur à modifier?
     })
     for(let i = 0; i < to_list.length; i++){
-      if(!SORTIES_INV.includes(to_list[i]["sortie"]) && !passage_dico[to_list[i]["sortie"]]["tags"]["biomes"]["entry"] && !passage_dico[to_list[i]["sortie"]]["tags"]["biomes"]["propa"] ){
+      if(!SORTIES_INV.includes(to_list[i]["sortie"]) && !passage_dico[to_list[i]["sortie"]]["tags"]["biomes"]["entry"] && !visited.has(to_list[i]["sortie"]) ){
         propagation(passage_dico, to_list[i]["sortie"], biome)
       }
     }
-  }
-  for(key in passage_dico){
-    passage_dico[key]["tags"]["biomes"]["propa"]=false
   }
   const entries = Object.keys(passage_dico)
     .filter(key => passage_dico[key].tags?.biomes?.entry)
     .map(key => ({ id: key, biome: passage_dico[key].tags.biomes.value }));
 
   const uniqueBiomes = new Set(BIOMES);
-
+  const visited = new Set()
   requestAnimationFrame(()=>{
     entries.forEach(entry => {
       if (!uniqueBiomes.has(entry.biome)) {
         uniqueBiomes.add(entry.biome);
         BIOMES.push(entry.biome);
       }
-      console.log(`Propagation du biome ${entry}`)
+      console.log(`Propagation du biome ${entry.biome}`)
       propagation(passage_dico, entry.id, entry.biome);
     })
   })
@@ -240,6 +313,7 @@ function newTabOnClick(nodeID) {
 
 async function createGraphe(url="A_COPIER_labyrinthe_de_la_mort - template_ldvelh.csv") {
   if (cy_graph) {
+    destroy(cy_graph)
     cy_graph = null;
   }
   await new Promise(resolve => {
@@ -257,14 +331,14 @@ async function createGraphe(url="A_COPIER_labyrinthe_de_la_mort - template_ldvel
   console.log(CSV_OBJ)
   cy_list = await createCyElementsFromDico(CSV_OBJ)
   console.log(cy_list)
-  CSV_OBJ["172"]["tags"]["biomes"]={"value":"forêt","entry":true}
   CSV_OBJ["162"]["tags"]["biomes"]={"value":"océan","entry":true}
   CSV_OBJ["250"]["tags"]["biomes"]={"value":"vallée","entry":true}
   CSV_OBJ["87"]["tags"]["biomes"]={"value":"glace","entry":true}
   CSV_OBJ["301"]["tags"]["biomes"]={"value":"chemin","entry":true}
   CSV_OBJ["402"]["tags"]["biomes"]={"value":"château","entry":true}
   CSV_OBJ["53"]["tags"]["biomes"]={"value":"marais","entry":true}
-  // console.log(exportCSV(CSV_OBJ))
+  
+  console.log(exportCSV(CSV_OBJ))
   cy_graph = cytoscape({
 
     container: document.getElementById('cy'), // container to render in
@@ -305,6 +379,7 @@ async function createGraphe(url="A_COPIER_labyrinthe_de_la_mort - template_ldvel
     }
   
   });
+  cy_graph.boxSelectionEnabled( true );
   //event listener on node click
   cy_graph.on('click', 'node', function(evt){
     console.log( 'clicked ' + this.id() );
@@ -329,6 +404,15 @@ async function createGraphe(url="A_COPIER_labyrinthe_de_la_mort - template_ldvel
     event.stopPropagation();
     
   });
+  var dijkstra = cy_graph.elements().dijkstra('#1', function(edge){
+    return edge.data('weight');
+  });
+  var pathToJ = dijkstra.distanceTo( cy_graph.$('#304') );
+  console.log(dijkstra)
+  console.log(pathToJ)
+  var aStar = cy_graph.elements().aStar({ root: "#172", goal: "#304" });
+  console.log(aStar.path.select())
+  console.log(aStar)
   console.log(CSV_OBJ)
   const progressBar = document.querySelector(".progress-bar");
   return new Promise(async (resolve)=>{
@@ -350,6 +434,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const progress = document.querySelector(".progress");
   const progressBar = document.querySelector(".progress-bar");
   const numInput = document.getElementById("csvColumns");
+  const refreshBtn = document.getElementById("refreshBtn")
 
   let importedCSV = null; // Variable pour stocker le fichier CSV
 
@@ -360,6 +445,9 @@ document.addEventListener("DOMContentLoaded", function () {
   });
   propaBtn.addEventListener("click",()=>{
     lancerPropagation(CSV_OBJ)
+  })
+  refreshBtn.addEventListener("click",()=>{
+    refreshGraph()
   })
   closeBtn.addEventListener("click", () => {
     if(!isImportating){
@@ -408,4 +496,4 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 });
 
-createGraphe("pirate_des_sept_mers_export.csv")
+createGraphe("pirate_des_sept_mers.csv").then(()=>{initNodeSearch();})

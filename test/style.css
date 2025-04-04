@@ -111,3 +111,20 @@ div{
     background-color: #5a6268;
   }
 
+  /* Style de recherche */
+#cy-search {
+  width: 200px;
+  transition: width 0.3s;
+}
+#cy-search:focus {
+  width: 300px;
+}
+#cy-search-id.is-valid {
+  border-color: #28a745;
+  box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+}
+
+#cy-search-id.is-invalid {
+  border-color: #dc3545;
+  box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
