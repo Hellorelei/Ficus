@@ -52,11 +52,15 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
         </div>
         <div class="modal-body">
-          <input type="file" id="csvFile" accept=".csv" class="form-control">
-        </div>
-        <div>
-          <div class="progress" style="display: none; height: 30px;">
-            <div class="progress-bar progress-bar-striped" role="progressbar" style="width: 10%; display : none" aria-valuenow="10" aria-valuemin="0" aria-valuemax="100">10%</div>
+          <input type="file" id="csvFile" accept=".csv" class="form-control shadow-sm mb-3">
+          <div class="modal-content mb-2">
+            <h6 class="mb-2">Nombre de colonnes du CSV par défaut</h6>
+            <input type="number" id="csvColumns" class="form-control shadow-sm mb-1" value="31">
+          </div>
+          <div class="modal-content mb-3">
+            <div class="progress" style="display: none; height: 30px;">
+              <div class="progress-bar progress-bar-striped" role="progressbar" style="width: 10%; display : none" aria-valuenow="10" aria-valuemin="0" aria-valuemax="100">10%</div>
+            </div>
           </div>
         </div>
         <div class="modal-footer">

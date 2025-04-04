@@ -2,7 +2,7 @@
 // Changer un tag d'un passage viendrait à changer tous les autres
 // const TAGS = {"biomes":"", "personnages":"", "actions":""}
 let cy_graph = null
-const LAST_DEFAULT_TAG = 31  //the number of default columns
+let LAST_DEFAULT_TAG = 31  //the number of default columns
 const BIOMES = []
 SORTIES_INV = ["x","v","p","r"]
 let CSV_OBJ = {}
@@ -343,6 +343,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const fileInput = document.getElementById("csvFile");
   const progress = document.querySelector(".progress");
   const progressBar = document.querySelector(".progress-bar");
+  const numInput = document.getElementById("csvColumns");
 
   let importedCSV = null; // Variable pour stocker le fichier CSV
 
@@ -369,6 +370,7 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   fileInput.addEventListener("change", (event) => {
+    LAST_DEFAULT_TAG = numInput.value
     isImportating = true
       const file = event.target.files[0]; // Récupérer le fichier sélectionné
       progressBar.style.width = "17%";
