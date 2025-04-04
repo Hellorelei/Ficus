@@ -23,7 +23,6 @@ function lancerPropagation(passage_dico){
     if (!(BIOMES.includes(biome))){
       BIOMES.push(biome)
     }
-    console.log(passage_dico)
     let to_list = passage_dico[String(passage)]["to"]
     passage_dico[String(passage)]["tags"]["biomes"]["value"]=biome
     passage_dico[String(passage)]["tags"]["biomes"]["propa"]=true
@@ -31,7 +30,6 @@ function lancerPropagation(passage_dico){
       cy_graph.nodes(`#${passage}`).style('background-color', `hsl(${(BIOMES.indexOf(biome)*30)%255}, 70%, 65%)`); // Couleur à modifier?
     })
     for(let i = 0; i < to_list.length; i++){
-      console.log(`passage : ${passage}, ${i}`)
       if(!SORTIES_INV.includes(to_list[i]["sortie"]) && !passage_dico[to_list[i]["sortie"]]["tags"]["biomes"]["entry"] && !passage_dico[to_list[i]["sortie"]]["tags"]["biomes"]["propa"] ){
         propagation(passage_dico, to_list[i]["sortie"], biome)
       }
@@ -40,8 +38,6 @@ function lancerPropagation(passage_dico){
   const entries = Object.keys(passage_dico)
     .filter(key => passage_dico[key].tags?.biomes?.entry)
     .map(key => ({ id: key, biome: passage_dico[key].tags.biomes.value }));
-  
-  console.log(entries)
 
   const uniqueBiomes = new Set(BIOMES);
 
@@ -60,6 +56,7 @@ function lancerPropagation(passage_dico){
   //   console.log(`Propagation du biome ${entries[id]}`)
   //   propagation(passage_dico, id, entries[id])
   // }
+  // return new Promise((resolve)=>{resolve()})
 }
 
 function exportCSV(obj){
@@ -238,9 +235,15 @@ function newTabOnClick(nodeID) {
 
 async function createGraphe(url="A_COPIER_labyrinthe_de_la_mort - template_ldvelh.csv") {
   if (cy_graph) {
-    cy_graph.destroy();
     cy_graph = null;
   }
+  await new Promise(resolve => {
+    if (document.readyState === 'complete') {
+        resolve();
+    } else {
+        document.addEventListener('DOMContentLoaded', resolve);
+    }
+  });
 
   // Libérer la mémoire
   CSV_OBJ = {};
@@ -256,8 +259,7 @@ async function createGraphe(url="A_COPIER_labyrinthe_de_la_mort - template_ldvel
   CSV_OBJ["301"]["tags"]["biomes"]={"value":"chemin","entry":true}
   CSV_OBJ["402"]["tags"]["biomes"]={"value":"château","entry":true}
   CSV_OBJ["53"]["tags"]["biomes"]={"value":"marais","entry":true}
-  console.log(exportCSV(CSV_OBJ))
-  
+  // console.log(exportCSV(CSV_OBJ))
   cy_graph = cytoscape({
 
     container: document.getElementById('cy'), // container to render in
@@ -324,13 +326,16 @@ async function createGraphe(url="A_COPIER_labyrinthe_de_la_mort - template_ldvel
   });
   console.log(CSV_OBJ)
   const progressBar = document.querySelector(".progress-bar");
-  progressBar.style.width = "64%";
-  progressBar.innerHTML = "64%"
-  lancerPropagation(CSV_OBJ)
-
+  return new Promise(async (resolve)=>{
+    progressBar.style.width = "64%";
+    progressBar.innerHTML = "64%"
+    await lancerPropagation(CSV_OBJ)
+    resolve()
+  })
 }
 // gérer l'importation du CSV dans le graphe
 document.addEventListener("DOMContentLoaded", function () {
+  let isImportating = false
   const modal = document.getElementById("csvModal");
   const openBtn = document.querySelector(".open-modal-btn");
   const closeBtn = document.querySelector(".close-btn");
@@ -341,25 +346,49 @@ document.addEventListener("DOMContentLoaded", function () {
 
   let importedCSV = null; // Variable pour stocker le fichier CSV
 
-  openBtn.addEventListener("click", () => modal.style.display = "flex");
-  closeBtn.addEventListener("click", () => modal.style.display = "none");
-  closeCross.addEventListener("click", () => modal.style.display = "none");
+  openBtn.addEventListener("click", () => {
+    if(!isImportating){
+      modal.style.display = "flex"
+    }
+  });
+  closeBtn.addEventListener("click", () => {
+    if(!isImportating){
+      modal.style.display = "none"
+      progressBar.style.display = "none"
+      progressBar.style.width = "17%";
+      progressBar.innerHTML = "17%"
+    }
+  });
+  closeCross.addEventListener("click", () => {
+    if(!isImportating){
+      modal.style.display = "none"
+      progressBar.style.display = "none"
+      progressBar.style.width = "17%";
+      progressBar.innerHTML = "17%"
+    }
+  });
 
   fileInput.addEventListener("change", (event) => {
+    isImportating = true
       const file = event.target.files[0]; // Récupérer le fichier sélectionné
+      progressBar.style.width = "17%";
+      progressBar.innerHTML = "17%"
       if (file && file.type === "text/csv") {
         // modal.style.display = "none"
         importedCSV = URL.createObjectURL(file); // Générer une URL temporaire du fichier
         console.log("Fichier CSV chargé :", importedCSV);
         progress.style.display = "flex";
         progressBar.style.display = "flex";
-        createGraphe(importedCSV).then(()=>{
-          progressBar.style.width = "89%";
-          progressBar.innerHTML = "89%"
+        createGraphe(importedCSV).then(()=>{          
           setTimeout(() => {
-            progressBar.style.width = "100%";
-            progressBar.innerHTML = "100%"
-          }, 3000);
+            progressBar.style.width = "89%";
+            progressBar.innerHTML = "89%"
+            setTimeout(() => {
+              progressBar.style.width = "100%";
+              progressBar.innerHTML = "100%"
+              isImportating = false
+            }, 4000);
+          }, 4000);
         })
       } else {
           alert("Veuillez sélectionner un fichier CSV valide !");
