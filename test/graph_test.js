@@ -309,11 +309,24 @@ function newTabOnClick(nodeID) {
     div.id = "sideTab" ;
     div.className = "sideTab";
     document.body.appendChild(div);
+
   for(tag in CSV_OBJ[nodeID]["tags"]){
+    let inpGroup = document.createElement("div")
+    inpGroup.className="input-group mb-3"
+    inpGroup.id = `inpGroup${tag}`
+    document.getElementById("sideTab").appendChild(inpGroup)
+    let inpPrepend = document.createElement("div")
+    inpPrepend.id = `inpPrepend${tag}`
+    inpPrepend.className = "input-group-prepend"
+    document.getElementById(`inpGroup${tag}`).appendChild(inpPrepend)
+    let tagName = document.createElement("span")
+    tagName.innerText = tag
+    tagName.className = "input-group-text"
+    document.getElementById(`inpPrepend${tag}`).appendChild(tagName)
     let tagContent = document.createElement("input")
-    tagContent.className = ""
-    tagContent.value = CSV_OBJ[nodeID]["tags"][tag]["value"]
-    document.getElementById("sideTab").appendChild(tagContent)
+    tagContent.className = "form-control"
+    tagContent.placeholder = CSV_OBJ[nodeID]["tags"][tag]["value"]
+    document.getElementById(`inpGroup${tag}`).appendChild(tagContent)
   }
 }
 
