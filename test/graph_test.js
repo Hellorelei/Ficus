@@ -309,11 +309,17 @@ function newTabOnClick(nodeID) {
     div.id = "sideTab" ;
     div.className = "sideTab";
     document.body.appendChild(div);
+  for(tag in CSV_OBJ[nodeID]["tags"]){
+    let tagContent = document.createElement("input")
+    tagContent.className = ""
+    tagContent.value = CSV_OBJ[nodeID]["tags"][tag]["value"]
+    document.getElementById("sideTab").appendChild(tagContent)
+  }
 }
 
 async function createGraphe(url="A_COPIER_labyrinthe_de_la_mort - template_ldvelh.csv") {
   if (cy_graph) {
-    destroy(cy_graph)
+    cy_graph.destroy()
     cy_graph = null;
   }
   await new Promise(resolve => {
@@ -419,6 +425,7 @@ async function createGraphe(url="A_COPIER_labyrinthe_de_la_mort - template_ldvel
     progressBar.style.width = "64%";
     progressBar.innerHTML = "64%"
     await lancerPropagation(CSV_OBJ)
+    initNodeSearch()
     resolve()
   })
 }
@@ -496,4 +503,4 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 });
 
-createGraphe("pirate_des_sept_mers.csv").then(()=>{initNodeSearch();})
+createGraphe("pirate_des_sept_mers.csv")
