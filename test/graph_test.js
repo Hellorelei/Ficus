@@ -310,6 +310,7 @@ function newTabOnClick(nodeID) {
     div.className = "sideTab";
     document.body.appendChild(div);
 
+  // À définir sûrement autrement
   for(tag in CSV_OBJ[nodeID]["tags"]){
     let inpGroup = document.createElement("div")
     inpGroup.className="input-group mb-3"
