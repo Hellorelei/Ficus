@@ -399,31 +399,59 @@ async function createGraphe(url="A_COPIER_labyrinthe_de_la_mort - template_ldvel
     }
   
   });
-  cy_graph.boxSelectionEnabled( true );
-  //event listener on node click
-  cy_graph.on('click', 'node', function(evt){
-    console.log( 'clicked ' + this.id() );
-    nodeID = this.id()
-    cy_graph.nodes().style('background-color', '#FFFACD');
-    cy_graph.nodes(`[id = "${nodeID}"]`).style('background-color', 'blue');
-    newTabOnClick(nodeID)
-  });
+  cy_graph.boxSelectionEnabled(true);
+
+  cy_graph.on('click', 'node', function(evt) {
+      const clickedNode = this;
+      const nodeID = clickedNode.id();
+      console.log('clicked ' + nodeID);
   
+      // Récupère la taille du premier nœud comme taille de référence
+      const refNode = cy_graph.nodes()[0];
+      const baseWidth = parseFloat(refNode.style('width'));
+      const baseHeight = parseFloat(refNode.style('height'));
+  
+      // Réinitialise tous les nœuds
+      cy_graph.nodes().style({
+          'width': baseWidth + 'px',
+          'height': baseHeight + 'px',
+          'border-width': '0px'
+      });
+  
+      // Applique le style au nœud sélectionné (taille doublée + bordure rouge)
+      clickedNode.style({
+          'width': (baseWidth * 2.5) + 'px',  //taille du zoom
+          'height': (baseHeight * 2.5) + 'px',  //taille du zoom
+          'border-width': '4px',
+          'border-color': 'red',
+          'border-style': 'solid'
+      });
+  
+      newTabOnClick(nodeID);
+  });
   
   cy_graph.on('click', function(event) {
-    // Vérifie si l'élément cliqué est le fond (pas un node)
-    if (event.target === cy_graph) {
-        cy_graph.nodes().style('background-color', '#FFFACD');
-        destroySideTab();
+      if (event.target === cy_graph) {
+          // Même logique de réinitialisation
+          const refNode = cy_graph.nodes()[0];
+          const baseWidth = parseFloat(refNode.style('width'));
+          const baseHeight = parseFloat(refNode.style('height'));
   
-    }
+          cy_graph.nodes().style({
+              'width': baseWidth + 'px',
+              'height': baseHeight + 'px',
+              'border-width': '0px'
+          });
+  
+          destroySideTab();
+      }
   });
   
+  // Stop propagation
   cy_graph.on('click', 'node', function(event) {
-    // Empêche l'exécution de maFonction si un node est cliqué
-    event.stopPropagation();
-    
+      event.stopPropagation();
   });
+  
   var dijkstra = cy_graph.elements().dijkstra('#1', function(edge){
     return edge.data('weight');
   });
