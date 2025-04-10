@@ -480,6 +480,7 @@ async function createGraphe(url="A_COPIER_labyrinthe_de_la_mort - template_ldvel
   });
   
   cy_graph.on('click', function(event) {
+    // ne fonctionne plus à cause de cy_graph qui est devenu de classe Graph
       if (event.target === cy_graph) {
           // Même logique de réinitialisation
           const refNode = cy_graph.nodes()[0];
@@ -491,6 +492,7 @@ async function createGraphe(url="A_COPIER_labyrinthe_de_la_mort - template_ldvel
               'height': baseHeight + 'px',
               'border-width': '0px'
           });
+          console.log("Cacher la sideTab")
   
           destroySideTab();
       }
