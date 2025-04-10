@@ -6,16 +6,180 @@ let LAST_DEFAULT_TAG = 31  //the number of default columns
 const BIOMES = []
 SORTIES_INV = ["x","v","p","r"]
 let CSV_OBJ = {}
+let OBJ_TEST
 
 class passageTag{
-  constructor(height, width) {
+  constructor({height, width}={}) {
     this.height = height;
     this.width = width;
   }
 }
 
-function refreshGraph(layout="cose"){
-  cy_graph.layout({name:layout}).run()
+class Data{
+  constructor({working_data={}, entry_pdf_name="", PDF=Blob, entry_csv_name="", CSV=Blob}={}){
+    this.working_data = working_data
+    this.entry_pdf_name = entry_pdf_name
+    this.PDF = PDF
+    this.entry_csv_name = entry_csv_name
+    this.CSV = CSV
+  }
+
+  edit(target, variable, value, flood){
+    return null
+  }
+
+  importCSV(text_csv){
+    let papa_results = ""
+    Papa.parse(text_csv, {
+      header:true,
+      skipEmptyLines: true, // Ignorer les lignes vides
+      complete: (results) => {
+        papa_results = results.data; // Afficher les données
+      },
+      error: (err) => {
+        console.error('Erreur lors du parsing du CSV:', err);
+      },
+    });
+
+    let results = {}
+    let lastValidId = null
+
+    for (let i = 0; i < papa_results.length; i++) {
+      let obj = papa_results[i]
+      const id = obj.numero_passage || lastValidId
+
+      if (!results[id]){
+        results[id] = {
+          text: "",
+          to: [],
+          from: [],
+          tags: { biomes: {}, personnages: {}, actions: {} }
+        };
+      }
+
+      if(obj.numero_passage){
+        lastValidId = obj.numero_passage
+        // let added_tags = {"biomes":"", "personnages":"", "actions":""}
+        for(l in Object.fromEntries(Object.entries(obj).slice(LAST_DEFAULT_TAG, 100))){
+          results[id].tags[l] = {"value" : obj[l], "entry" : Boolean(obj[l])}
+        }
+        results[id]["to"].push(Object.fromEntries(Object.entries(obj).slice(1, LAST_DEFAULT_TAG)))
+      }else{
+        results[id]["to"].push(Object.fromEntries(Object.entries(obj).slice(1, LAST_DEFAULT_TAG)))
+      }
+    }
+    console.log(results)
+    this.working_data = results
+    return results;
+  }
+
+  importPDF(){
+    console.log("Fonction d'import de PDF à effectuer")
+    return null
+  }
+
+  async import(filename){
+    try {
+      let response = await fetch(filename);
+  
+      if (!response.ok) {
+        throw new Error(`Erreur: ${response.status}`);
+      }
+      let importedFile = await response.clone().blob()
+      const extension = filename.split(".").pop().toLowerCase()
+      switch(extension){
+        case "csv":
+          let text_csv = await response.text();
+          this.entry_csv_name = filename
+          this.CSV = importedFile
+          this.importCSV(text_csv)
+          break
+        case "pdf":
+          this.entry_pdf_name = filename  
+          this.PDF = importedFile
+          this.importPDF()
+          break
+        default:
+          throw new Error("File type is not supported")
+      }
+      // let papa_results = []
+    } catch (error){
+      console.error('Erreur lors de la récupération ou du traitement du fichier:', error);
+      return null;
+    }
+  }
+
+  export(){
+    // Fonction pour échapper les valeurs contenant des virgules et faussant le csv sinon
+    function escapeCSVValue(value) {
+      // Si ce n'est pas une string, on retourne la valeur telle quelle
+      if (typeof value !== 'string') return value;
+      
+      // Si la valeur est déjà entourée de guillemets, on la retourne telle quelle
+      if (/^".*"$/.test(value)) return value;
+      
+      // Si la valeur contient des virgules ou des guillemets, on l'entoure de guillemets
+      // et on double les guillemets existants (règle CSV)
+      if (value.includes(',') || value.includes('"')) {
+        return `"${value.replace(/"/g, '""')}"`;
+      }
+      
+      // Sinon, on retourne la valeur sans modification
+      return value;
+    }
+    // Initialise les headers
+    const first_key = Object.keys(this.working_data)[0]
+    let csv_array = [["numero_passage",]]
+    csv_array[0] = csv_array[0].concat(Object.keys(this.working_data[first_key]["to"][0]))
+    csv_array[0] = csv_array[0].concat(Object.keys(this.working_data[first_key]["tags"]))
+    // loop sur l'objet de données
+    for(let passage in this.working_data){
+      // loop sur les sorties / lignes
+      for(let sortie = 0; sortie < this.working_data[String(passage)]["to"].length; sortie++){
+        let line_csv = [""]
+        // loop sur le dico des sorties
+        for(let sortie_tag in this.working_data[String(passage)]["to"][sortie]){
+          line_csv.push(escapeCSVValue(this.working_data[String(passage)]["to"][sortie][sortie_tag]));
+        }
+        // rajoute le numéro de passage uniquement si c'est la 1ère sortie
+        if(sortie===0){
+          line_csv[0]=String([passage])
+          // loop sur les tags, et le rajoute au csv
+          for(let tag in this.working_data[String(passage)]["tags"]){
+            line_csv.push(escapeCSVValue(this.working_data[String(passage)]["tags"][tag]["value"]))
+          }
+        }
+        csv_array.push(line_csv)
+      }
+    }
+    let csv_txt = ''
+    console.log(csv_array)
+    csv_array.forEach(row =>{
+      csv_txt += row.join(',') + '\n'
+    })
+    const blob = new Blob([csv_txt], { type: 'text/csv;charset=utf-8,' })
+    const objUrl = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.setAttribute('href', objUrl)
+    link.setAttribute('download', 'File.csv')
+    link.textContent = 'Click to Download'
+    
+    // Trouver l'élément avec l'ID 'downloadCSV' et y ajouter le lien
+    const downloadCSVButton = document.getElementById('downloadCSV');
+    if (downloadCSVButton) {
+      downloadCSVButton.addEventListener('click', () => {
+        link.click();  // Simuler le clic sur le lien pour télécharger
+      });
+    }
+    
+    return csv_txt
+    
+  }
+}
+class Graph extends cytoscape{
+  refresh(layout) {
+    this.layout({name:layout}).run()
+  }
 }
 
 function initNodeSearch() {
@@ -137,131 +301,6 @@ function lancerPropagation(passage_dico){
   // return new Promise((resolve)=>{resolve()})
 }
 
-function exportCSV(obj){
-  // Fonction pour échapper les valeurs contenant des virgules et faussant le csv sinon
-  function escapeCSVValue(value) {
-    // Si ce n'est pas une string, on retourne la valeur telle quelle
-    if (typeof value !== 'string') return value;
-    
-    // Si la valeur est déjà entourée de guillemets, on la retourne telle quelle
-    if (/^".*"$/.test(value)) return value;
-    
-    // Si la valeur contient des virgules ou des guillemets, on l'entoure de guillemets
-    // et on double les guillemets existants (règle CSV)
-    if (value.includes(',') || value.includes('"')) {
-      return `"${value.replace(/"/g, '""')}"`;
-    }
-    
-    // Sinon, on retourne la valeur sans modification
-    return value;
-  }
-  // Initialise les headers
-  const first_key = Object.keys(obj)[0]
-  let csv_array = [["numero_passage",]]
-  csv_array[0] = csv_array[0].concat(Object.keys(obj[first_key]["to"][0]))
-  csv_array[0] = csv_array[0].concat(Object.keys(obj[first_key]["tags"]))
-  // loop sur l'objet de données
-  for(i in obj){
-    // loop sur les sorties / lignes
-    for(let j = 0; j < obj[String(i)]["to"].length; j++){
-      let line_csv = [""]
-      // loop sur le dico des sorties
-      for(k in obj[String(i)]["to"][j]){
-        line_csv.push(escapeCSVValue(obj[String(i)]["to"][j][k]));
-      }
-      // rajoute le numéro de passage uniquement si c'est la 1ère sortie
-      if(j===0){
-        line_csv[0]=String([i])
-        // loop sur les tags, et le rajoute au csv
-        for(l in obj[String(i)]["tags"]){
-          line_csv.push(escapeCSVValue(obj[String(i)]["tags"][l]["value"]))
-        }
-      }
-      csv_array.push(line_csv)
-    }
-  }
-  let csv_txt = ''
-  console.log(csv_array)
-  csv_array.forEach(row =>{
-    csv_txt += row.join(',') + '\n'
-  })
-  const blob = new Blob([csv_txt], { type: 'text/csv;charset=utf-8,' })
-  const objUrl = URL.createObjectURL(blob)
-  const link = document.createElement('a')
-  link.setAttribute('href', objUrl)
-  link.setAttribute('download', 'File.csv')
-  link.textContent = 'Click to Download'
-  
-  // Trouver l'élément avec l'ID 'downloadCSV' et y ajouter le lien
-  const downloadCSVButton = document.getElementById('downloadCSV');
-  if (downloadCSVButton) {
-    downloadCSVButton.addEventListener('click', () => {
-      link.click();  // Simuler le clic sur le lien pour télécharger
-    });
-  }
-  
-  return csv_txt
-  
-}
-
-async function getCSV(url) {
-  try {
-    let response = await fetch(url);
-
-    if (!response.ok) {
-      throw new Error(`Erreur: ${response.status}`);
-    }
-
-    let text_csv = await response.text();
-    // let papa_results = []
-
-    Papa.parse(text_csv, {
-      header:true,
-      skipEmptyLines: true, // Ignorer les lignes vides
-      complete: (results) => {
-        papa_results = results.data; // Afficher les données
-      },
-      error: (err) => {
-        console.error('Erreur lors du parsing du CSV:', err);
-      },
-    });
-
-    let results = {}
-    let lastValidId = null
-
-    for (let i = 0; i < papa_results.length; i++) {
-      let obj = papa_results[i]
-      const id = obj.numero_passage || lastValidId
-
-      if (!results[id]){
-        results[id] = {
-          text: "",
-          to: [],
-          from: [],
-          tags: { biomes: {}, personnages: {}, actions: {} }
-        };
-      }
-
-      if(obj.numero_passage){
-        lastValidId = obj.numero_passage
-        // let added_tags = {"biomes":"", "personnages":"", "actions":""}
-        for(l in Object.fromEntries(Object.entries(obj).slice(LAST_DEFAULT_TAG, 100))){
-          results[id].tags[l] = {"value" : obj[l], "entry" : Boolean(obj[l])}
-        }
-        results[id]["to"].push(Object.fromEntries(Object.entries(obj).slice(1, LAST_DEFAULT_TAG)))
-      }else{
-        results[id]["to"].push(Object.fromEntries(Object.entries(obj).slice(1, LAST_DEFAULT_TAG)))
-      }
-    }
-    console.log(results)
-    return results;
-
-  } catch (error){
-    console.error('Erreur lors de la récupération ou du traitement du CSV:', error);
-    return null;
-  }
-};
-
 function createCyElementsFromDico(dico){
   cy_list = []
   for(let i = 1; i < Object.keys(dico)[0];i++){
@@ -311,7 +350,7 @@ function newTabOnClick(nodeID) {
     document.body.appendChild(div);
 
   // À définir sûrement autrement
-  for(tag in CSV_OBJ[nodeID]["tags"]){
+  for(tag in OBJ_TEST.working_data[nodeID]["tags"]){
     let inpGroup = document.createElement("div")
     inpGroup.className="input-group mb-3"
     inpGroup.id = `inpGroup${tag}`
@@ -326,7 +365,7 @@ function newTabOnClick(nodeID) {
     document.getElementById(`inpPrepend${tag}`).appendChild(tagName)
     let tagContent = document.createElement("input")
     tagContent.className = "form-control"
-    tagContent.placeholder = CSV_OBJ[nodeID]["tags"][tag]["value"]
+    tagContent.placeholder = OBJ_TEST.working_data[nodeID]["tags"][tag]["value"]
     document.getElementById(`inpGroup${tag}`).appendChild(tagContent)
   }
 }
@@ -347,19 +386,19 @@ async function createGraphe(url="A_COPIER_labyrinthe_de_la_mort - template_ldvel
   // Libérer la mémoire
   CSV_OBJ = {};
   BIOMES.length = 0;
-  CSV_OBJ = await getCSV(url)
-  console.log(CSV_OBJ)
-  cy_list = await createCyElementsFromDico(CSV_OBJ)
+  await OBJ_TEST.import(url)
+  console.log(OBJ_TEST.working_data)
+  cy_list = await createCyElementsFromDico(OBJ_TEST.working_data)
   console.log(cy_list)
-  CSV_OBJ["162"]["tags"]["biomes"]={"value":"océan","entry":true}
-  CSV_OBJ["250"]["tags"]["biomes"]={"value":"vallée","entry":true}
-  CSV_OBJ["87"]["tags"]["biomes"]={"value":"glace","entry":true}
-  CSV_OBJ["301"]["tags"]["biomes"]={"value":"chemin","entry":true}
-  CSV_OBJ["402"]["tags"]["biomes"]={"value":"château","entry":true}
-  CSV_OBJ["53"]["tags"]["biomes"]={"value":"marais","entry":true}
+  OBJ_TEST.working_data["162"]["tags"]["biomes"]={"value":"océan","entry":true}
+  OBJ_TEST.working_data["250"]["tags"]["biomes"]={"value":"vallée","entry":true}
+  OBJ_TEST.working_data["87"]["tags"]["biomes"]={"value":"glace","entry":true}
+  OBJ_TEST.working_data["301"]["tags"]["biomes"]={"value":"chemin","entry":true}
+  OBJ_TEST.working_data["402"]["tags"]["biomes"]={"value":"château","entry":true}
+  OBJ_TEST.working_data["53"]["tags"]["biomes"]={"value":"marais","entry":true}
   
-  console.log(exportCSV(CSV_OBJ))
-  cy_graph = cytoscape({
+  //console.log(exportCSV(CSV_OBJ))
+  cy_graph = new Graph({
 
     container: document.getElementById('cy'), // container to render in
   
@@ -461,12 +500,12 @@ async function createGraphe(url="A_COPIER_labyrinthe_de_la_mort - template_ldvel
   var aStar = cy_graph.elements().aStar({ root: "#172", goal: "#304" });
   console.log(aStar.path.select())
   console.log(aStar)
-  console.log(CSV_OBJ)
+  console.log(OBJ_TEST.working_data)
   const progressBar = document.querySelector(".progress-bar");
   return new Promise(async (resolve)=>{
     progressBar.style.width = "64%";
     progressBar.innerHTML = "64%"
-    await lancerPropagation(CSV_OBJ)
+    await lancerPropagation(OBJ_TEST.working_data)
     initNodeSearch()
     resolve()
   })
@@ -493,10 +532,10 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
   propaBtn.addEventListener("click",()=>{
-    lancerPropagation(CSV_OBJ)
+    lancerPropagation(OBJ_TEST.working_data)
   })
   refreshBtn.addEventListener("click",()=>{
-    refreshGraph()
+    cy_graph.refresh()
   })
   closeBtn.addEventListener("click", () => {
     if(!isImportating){
@@ -544,5 +583,5 @@ document.addEventListener("DOMContentLoaded", function () {
       }
   });
 });
-
+OBJ_TEST = new Data()
 createGraphe("pirate_des_sept_mers.csv")
