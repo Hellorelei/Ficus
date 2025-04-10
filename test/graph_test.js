@@ -176,8 +176,18 @@ class Data{
     
   }
 }
-class Graph extends cytoscape{
-  refresh(layout) {
+// cytoscape.js ne permet pas de créer un héritage...
+class Graph{
+  constructor(options) {
+    this.cy = cytoscape(options);
+    // Recopie des méthodes de cytoscape
+    for (const key in this.cy) {
+      if (typeof this.cy[key] === 'function') {
+        this[key] = (...args) => this.cy[key](...args);
+      }
+    }
+  }
+  refresh(layout="cose") {
     this.layout({name:layout}).run()
   }
 }
