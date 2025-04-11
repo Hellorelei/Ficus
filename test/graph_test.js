@@ -196,12 +196,38 @@ function initNodeSearch() {
   cy_graph.style()
     .selector('.highlighted-node')
     .style({
-      'border-width': 3,
+      'border-width': 4,
       'border-color': '#FF5722',
       'transition-property': 'border-width, border-color',
       'transition-duration': '0.3s'
     })
     .update(); // Important pour appliquer les changements
+  cy_graph.style()
+    .selector('.highlighted-edges')
+    .style({
+      'line-color': "#28a745",
+      'width': '6px',
+      'target-arrow-color': '#0f7627'
+    })
+    .update()
+  cy_graph.style()
+    .selector('.final-node')
+    .style({
+      'border-width': 4,
+      'border-color': '#28a745',
+      'transition-property': 'border-width, border-color',
+      'transition-duration': '0.3s'
+    })
+    .update()
+  cy_graph.style()
+    .selector('.via-node')
+    .style({
+      'border-width': 4,
+      'border-color': '#0f5c76',
+      'transition-property': 'border-width, border-color',
+      'transition-duration': '0.3s'
+    })
+    .update()
   // Crée l'interface de recherche
   const searchInput = document.getElementById('cy-search');
   const searchClear = document.getElementById('cy-search-clear');
@@ -217,17 +243,36 @@ function initNodeSearch() {
 
   // Recherche lors de la frappe (avec délai de 300ms)
   let searchTimeout;
+  let nodesInput = []
   searchInput.addEventListener('input', () => {
     clearTimeout(searchTimeout);
     searchTimeout = setTimeout(() => {
-      searchNodeById(searchInput.value.trim());
+      if(searchInput.value.includes(',')){
+        nodesInput = searchInput.value.split(',')
+        if(nodesInput.length>2){
+          fromToVia(nodesInput[0].trim(),nodesInput[2].trim(),nodesInput[1].trim())
+        }else{
+          fromToVia(nodesInput[0].trim(),nodesInput[1].trim())
+        }
+      }else{
+        searchNodeById(searchInput.value.trim());
+      }
     }, 300);
   });
 
   // Recherche par Entrée
   searchInput.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') {
-      searchNodeById(searchInput.value.trim());
+      if(searchInput.value.includes(',')){
+        nodesInput = searchInput.value.split(',')
+        if(nodesInput.length>2){
+          fromToVia(nodesInput[0].trim(),nodesInput[2].trim(),nodesInput[1].trim())
+        }else{
+          fromToVia(nodesInput[0].trim(),nodesInput[1].trim())
+        }
+      }else{
+        searchNodeById(searchInput.value.trim());
+      }
     }
   });
 
@@ -262,8 +307,64 @@ function initNodeSearch() {
     }
   }
 
+  // Pour la doc : si l'utilisateur·ice entre 3 nombre séparés par des virgules
+  // "from, via, to", sinon "from, to"
+  async function fromToVia(node1,node2, via=null){
+    clearHighlight()
+    if(via){
+      const segment1 = await fromToVia(node1,via)
+      const segment2 = await fromToVia(via,node2)
+      if(segment1.success && segment2.success){
+        console.log("Réussi", segment1, segment2)
+        cy_graph.$(`#${via}`).addClass('via-node')
+        cy_graph.$(`#${node1}`).addClass('highlighted-node')
+        cy_graph.$(`#${node2}`).addClass('final-node')
+        segment1.path.addClass('highlighted-edges');
+        segment2.path.addClass('highlighted-edges');
+        cy_graph.nodes().removeClass('highlighted-edges')
+      }else{
+        clearHighlight()
+        searchInput.classList.add('is-invalid');
+        searchInput.classList.remove('is-valid');
+      }
+    }else{
+      try{
+        const dijkstra = cy_graph.elements().dijkstra({
+          root: `#${node1}`,
+          directed: true
+        });
+        // console.log(dijkstra, dijkstra.found)
+        const path = dijkstra.pathTo(cy_graph.$(`#${node2}`));
+        const distance = dijkstra.distanceTo(cy_graph.$(`#${node2}`))
+        console.log("Dist :", distance)
+        if(!path.empty() && distance !== Infinity){
+          console.log(path)
+          path.addClass('highlighted-edges');
+          searchInput.classList.add('is-valid');
+          searchInput.classList.remove('is-invalid');
+          cy_graph.$(`#${node1}`).addClass('highlighted-node')
+          cy_graph.$(`#${node2}`).addClass('final-node')
+          cy_graph.nodes().removeClass('highlighted-edges')
+          const edgeIds = path.edges().map(edge => edge.id());
+          return { success: true, path: path };
+        }else{
+          searchInput.classList.add('is-invalid');
+          searchInput.classList.remove('is-valid');
+          return { success: false, path: [] };
+        }
+      } catch(error){
+        console.error("Erreur dans fromToVia():", error);
+        searchInput.classList.add('is-invalid');
+        return { success: false, error: error.message };
+      }
+    }
+    //{data : {id: `e${String(keys)}-${String(dico[keys]["to"][i]["sortie"])}`, source : String(keys), target : String(dico[keys]["to"][i]["sortie"])}}
+  }
   function clearHighlight() {
     cy_graph.nodes().removeClass('highlighted-node');
+    cy_graph.nodes().removeClass('final-node');
+    cy_graph.nodes().removeClass('via-node');
+    cy_graph.elements().removeClass('highlighted-edges');
     searchInput.classList.remove('is-valid', 'is-invalid');
   }
 }
@@ -481,21 +582,22 @@ async function createGraphe(url="A_COPIER_labyrinthe_de_la_mort - template_ldvel
   
   cy_graph.on('click', function(event) {
     // ne fonctionne plus à cause de cy_graph qui est devenu de classe Graph
-      if (event.target === cy_graph) {
-          // Même logique de réinitialisation
-          const refNode = cy_graph.nodes()[0];
-          const baseWidth = parseFloat(refNode.style('width'));
-          const baseHeight = parseFloat(refNode.style('height'));
-  
-          cy_graph.nodes().style({
-              'width': baseWidth + 'px',
-              'height': baseHeight + 'px',
-              'border-width': '0px'
-          });
-          console.log("Cacher la sideTab")
-  
-          destroySideTab();
-      }
+    console.log(event.target.cy)
+    if (event.target.cy === cy_graph) {
+        // Même logique de réinitialisation
+        const refNode = cy_graph.nodes()[0];
+        const baseWidth = parseFloat(refNode.style('width'));
+        const baseHeight = parseFloat(refNode.style('height'));
+
+        cy_graph.nodes().style({
+            'width': baseWidth + 'px',
+            'height': baseHeight + 'px',
+            'border-width': '0px'
+        });
+        console.log("Cacher la sideTab")
+
+        destroySideTab();
+    }
   });
   
   // Stop propagation
