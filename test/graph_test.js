@@ -509,7 +509,7 @@ async function createGraphe(url="A_COPIER_labyrinthe_de_la_mort - template_ldvel
   OBJ_TEST.working_data["53"]["tags"]["biomes"]={"value":"marais","entry":true}
   
   //console.log(exportCSV(CSV_OBJ))
-  cy_graph = new Graph({
+  cy_graph = cytoscape({
 
     container: document.getElementById('cy'), // container to render in
   
@@ -559,6 +559,7 @@ async function createGraphe(url="A_COPIER_labyrinthe_de_la_mort - template_ldvel
       // Récupère la taille du premier nœud comme taille de référence
       const refNode = cy_graph.nodes()[0];
       const baseWidth = parseFloat(refNode.style('width'));
+      console.log(baseWidth)
       const baseHeight = parseFloat(refNode.style('height'));
   
       // Réinitialise tous les nœuds
@@ -583,7 +584,7 @@ async function createGraphe(url="A_COPIER_labyrinthe_de_la_mort - template_ldvel
   cy_graph.on('click', function(event) {
     // ne fonctionne plus à cause de cy_graph qui est devenu de classe Graph
     console.log(event.target.cy)
-    if (event.target.cy === cy_graph) {
+    if (event.target === cy_graph) {
         // Même logique de réinitialisation
         const refNode = cy_graph.nodes()[0];
         const baseWidth = parseFloat(refNode.style('width'));
