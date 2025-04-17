@@ -191,6 +191,9 @@ class Graph{
     this.layout({name:layout}).run()
   }
 }
+function refresh(layout="cose"){
+  cy_graph.layout({name:layout}).run()
+}
 
 function initNodeSearch() {
   cy_graph.style()
@@ -566,7 +569,8 @@ async function createGraphe(url="A_COPIER_labyrinthe_de_la_mort - template_ldvel
       cy_graph.nodes().style({
           'width': baseWidth + 'px',
           'height': baseHeight + 'px',
-          'border-width': '0px'
+          'border-width': '1',
+          'border-color': 'black'
       });
   
       // Applique le style au nœud sélectionné (taille doublée + bordure rouge)
@@ -593,7 +597,7 @@ async function createGraphe(url="A_COPIER_labyrinthe_de_la_mort - template_ldvel
         cy_graph.nodes().style({
             'width': baseWidth + 'px',
             'height': baseHeight + 'px',
-            'border-width': '0px'
+            'border-width': '1'
         });
         console.log("Cacher la sideTab")
 
@@ -650,7 +654,7 @@ document.addEventListener("DOMContentLoaded", function () {
     lancerPropagation(OBJ_TEST.working_data)
   })
   refreshBtn.addEventListener("click",()=>{
-    cy_graph.refresh()
+    refresh()
   })
   closeBtn.addEventListener("click", () => {
     if(!isImportating){
