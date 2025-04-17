@@ -558,9 +558,9 @@ async function createGraphe(url="A_COPIER_labyrinthe_de_la_mort - template_ldvel
   
       // Récupère la taille du premier nœud comme taille de référence
       const refNode = cy_graph.nodes()[0];
-      const baseWidth = parseFloat(refNode.style('width'));
-      console.log(baseWidth)
-      const baseHeight = parseFloat(refNode.style('height'));
+      const baseWidth = 30;
+      //console.log(baseWidth)
+      const baseHeight = 30;
   
       // Réinitialise tous les nœuds
       cy_graph.nodes().style({
@@ -571,8 +571,8 @@ async function createGraphe(url="A_COPIER_labyrinthe_de_la_mort - template_ldvel
   
       // Applique le style au nœud sélectionné (taille doublée + bordure rouge)
       clickedNode.style({
-          'width': (baseWidth * 2.5) + 'px',  //taille du zoom
-          'height': (baseHeight * 2.5) + 'px',  //taille du zoom
+          'width': (baseWidth * 2) + 'px',  //taille du zoom
+          'height': (baseHeight * 2) + 'px',  //taille du zoom
           'border-width': '4px',
           'border-color': 'red',
           'border-style': 'solid'
