@@ -60,7 +60,7 @@ class Data{
       if(obj.numero_passage){
         lastValidId = obj.numero_passage
         // let added_tags = {"biomes":"", "personnages":"", "actions":""}
-        for(l in Object.fromEntries(Object.entries(obj).slice(LAST_DEFAULT_TAG, 100))){
+        for(let l in Object.fromEntries(Object.entries(obj).slice(LAST_DEFAULT_TAG, 100))){
           results[id].tags[l] = {"value" : obj[l], "entry" : Boolean(obj[l])}
         }
         results[id]["to"].push(Object.fromEntries(Object.entries(obj).slice(1, LAST_DEFAULT_TAG)))
@@ -87,6 +87,7 @@ class Data{
       }
       let importedFile = await response.clone().blob()
       const extension = filename.split(".").pop().toLowerCase()
+      console.log(extension)
       switch(extension){
         case "csv":
           let text_csv = await response.text();
@@ -681,11 +682,10 @@ document.addEventListener("DOMContentLoaded", function () {
       if (file && file.type === "text/csv") {
         // modal.style.display = "none"
         importedCSV = URL.createObjectURL(file); // Générer une URL temporaire du fichier
-        console.log("Fichier CSV chargé :", importedCSV);
-        OBJ_TEST.import(file)
+        console.log("Fichier CSV chargé :", importedCSV, file.name);
         progress.style.display = "flex";
         progressBar.style.display = "flex";
-        createGraphe(importedCSV).then(()=>{          
+        createGraphe(file.name).then(()=>{          
           setTimeout(() => {
             progressBar.style.width = "89%";
             progressBar.innerHTML = "89%"
