@@ -682,6 +682,7 @@ document.addEventListener("DOMContentLoaded", function () {
         // modal.style.display = "none"
         importedCSV = URL.createObjectURL(file); // Générer une URL temporaire du fichier
         console.log("Fichier CSV chargé :", importedCSV);
+        OBJ_TEST.import(file)
         progress.style.display = "flex";
         progressBar.style.display = "flex";
         createGraphe(importedCSV).then(()=>{          

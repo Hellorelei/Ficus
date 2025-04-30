@@ -61,6 +61,9 @@ div{
 }*/
 
 /* Fenêtre modale */
+.modal{
+  background-color: rgba(91, 126, 117, 0.6) ;
+}
 /*.modal {
     display: none;
     position: fixed;
