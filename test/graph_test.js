@@ -555,55 +555,54 @@ async function createGraphe(url="A_COPIER_labyrinthe_de_la_mort - template_ldvel
   cy_graph.boxSelectionEnabled(true);
 
   cy_graph.on('click', 'node', function(evt) {
-      const clickedNode = this;
-      const nodeID = clickedNode.id();
-      console.log('clicked ' + nodeID);
-  
-      // Récupère la taille du premier nœud comme taille de référence
-      const refNode = cy_graph.nodes()[0];
-      const baseWidth = 30;
-      //console.log(baseWidth)
-      const baseHeight = 30;
-  
-      // Réinitialise tous les nœuds
-      cy_graph.nodes().style({
-          'width': baseWidth + 'px',
-          'height': baseHeight + 'px',
-          'border-width': '1',
-          'border-color': 'black'
-      });
-  
-      // Applique le style au nœud sélectionné (taille doublée + bordure rouge)
-      clickedNode.style({
-          'width': (baseWidth * 2) + 'px',  //taille du zoom
-          'height': (baseHeight * 2) + 'px',  //taille du zoom
-          'border-width': '4px',
-          'border-color': 'red',
-          'border-style': 'solid'
-      });
-  
-      newTabOnClick(nodeID);
-  });
-  
-  cy_graph.on('click', function(event) {
-    // ne fonctionne plus à cause de cy_graph qui est devenu de classe Graph
-    console.log(event.target.cy)
-    if (event.target === cy_graph) {
-        // Même logique de réinitialisation
-        const refNode = cy_graph.nodes()[0];
-        const baseWidth = parseFloat(refNode.style('width'));
-        const baseHeight = parseFloat(refNode.style('height'));
+    const clickedNode = this;
+    const nodeID = clickedNode.id();
+    console.log('clicked ' + nodeID);
 
+    // Définissez explicitement les dimensions de base
+    const baseWidth = 30;
+    const baseHeight = 30;
+
+    // Réinitialise tous les nœuds
+    cy_graph.nodes().style({
+        'width': baseWidth + 'px',
+        'height': baseHeight + 'px',
+        'border-width': '1',
+        'border-color': 'black'
+    });
+
+    // Applique le style au nœud sélectionné (taille doublée + bordure rouge)
+    clickedNode.style({
+        'width': (baseWidth * 2) + 'px',  // taille du zoom
+        'height': (baseHeight * 2) + 'px',  // taille du zoom
+        'border-width': '4px',
+        'border-color': 'red',
+        'border-style': 'solid'
+    });
+
+    newTabOnClick(nodeID);
+});
+
+cy_graph.on('click', function(event) {
+    // Vérifiez si le clic est sur le fond du graphe
+    if (event.target === cy_graph) {
+        // Définissez explicitement les dimensions de base
+        const baseWidth = 30;
+        const baseHeight = 30;
+
+        // Réinitialise tous les nœuds
         cy_graph.nodes().style({
             'width': baseWidth + 'px',
             'height': baseHeight + 'px',
-            'border-width': '1'
+            'border-width': '1',
+            'border-color': 'black'
         });
-        console.log("Cacher la sideTab")
 
+        console.log("Cacher la sideTab");
         destroySideTab();
     }
-  });
+});
+
   
   // Stop propagation
   cy_graph.on('click', 'node', function(event) {
