@@ -388,7 +388,8 @@ function lancerPropagation(passage_dico){
     passage_dico[String(passage)]["tags"]["biomes"]["value"]=biome
     visited.add(passage)
     requestAnimationFrame(()=>{
-      cy_graph.nodes(`#${passage}`).style('background-color', `hsl(${(BIOMES.indexOf(biome)*30)%255}, 70%, 65%)`); // Couleur à modifier?
+      cy_graph.nodes(`#${passage}`).style('background-color', `hsl(${(BIOMES.indexOf(biome)*25)%360}, 70%, ${(65-((Math.round(BIOMES.indexOf(biome)/15)*22))%88 +88)%88}%)`); // Couleur à modifier?
+      //cy_graph.nodes(`#${passage}`).style('background-color', `hsl(${(BIOMES.indexOf(biome)*30)%255}, 70%, 65%)`); anciennes couleurs
     })
     for(let i = 0; i < to_list.length; i++){
       if(!SORTIES_INV.includes(to_list[i]["sortie"]) && !passage_dico[to_list[i]["sortie"]]["tags"]["biomes"]["entry"] && !visited.has(to_list[i]["sortie"]) ){
