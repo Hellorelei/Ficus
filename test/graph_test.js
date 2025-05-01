@@ -24,8 +24,13 @@ class Data{
     this.CSV = CSV
   }
 
-  edit(target, variable, value, flood){
-    return null
+  edit(target, variable, value, flood=false){
+    if(flood){
+      this.working_data[target]["tags"][variable]["value"] = value
+      this.working_data[target]["tags"][variable]["entry"] = true
+    }else{
+      this.working_data[target]["sorties"][variable] = value
+    }
   }
 
   importCSV(text_csv){
@@ -479,10 +484,24 @@ function newTabOnClick(nodeID) {
     tagName.className = "input-group-text"
     document.getElementById(`inpPrepend${tag}`).appendChild(tagName)
     let tagContent = document.createElement("input")
+    tagContent.id = `inpCore${tag}`
     tagContent.className = "form-control"
     tagContent.placeholder = OBJ_TEST.working_data[nodeID]["tags"][tag]["value"]
     document.getElementById(`inpGroup${tag}`).appendChild(tagContent)
   }
+  let send_button = document.createElement("button")
+  send_button.innerText="Send data"
+  send_button.addEventListener("click", ()=>{
+    for(tag in OBJ_TEST.working_data[nodeID]["tags"]){
+      if(document.getElementById(`inpCore${tag}`).value!=""){
+        let value = document.getElementById(`inpCore${tag}`).value
+        console.log(document.getElementById(`inpCore${tag}`).value)
+        OBJ_TEST.edit(nodeID, tag, value ,true)
+      }
+    }
+  })
+  document.getElementById("sideTab").appendChild(send_button)
+
 }
 
 async function createGraphe(url="A_COPIER_labyrinthe_de_la_mort - template_ldvelh.csv") {
