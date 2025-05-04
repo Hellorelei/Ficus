@@ -22,7 +22,7 @@ CATEGORIE {
     string[] variables FK
 }
 CATEGORIE ||--|{ VARIABLE : "1 CATEGORIE contient [1..n] VARIABLE"
-TEST {
+VARIABLE {
     string nom PK, UK
     int[] sorties FK
 }
