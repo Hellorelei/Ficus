@@ -17,11 +17,11 @@ erDiagram
 		}
 		JSON ||--|{ NOEUD : "1 JSON contient [1..n] NOEUD"
     JSON ||--|{ CATEGORIE : "1 JSON contient [1..n] CATEGORIE"
-    CATEGORIE ||--|{ VARIABLE : "1 CATEGORIE contient [1..n] VARIABLE"
     CATEGORIE {
     	string nom PK, UK
     	string[] variables FK
     }
+    CATEGORIE ||--|{ VARIABLE : "1 CATEGORIE contient [1..n] VARIABLE"
     VARIABLE {
     	string nom PK, UK
     	int[] sorties FK
