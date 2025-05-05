@@ -146,10 +146,15 @@ class Data{
   }
 
   toJSON(){
-    let sortie_table = {}
+    let noeud_table = {}
     let gen_sortieID = idGenerator()
     for(let nodeID in this.working_data){
+      noeud_table[nodeID]={
+        SORTIE_id: [],
+        contenu_texte: this.working_data[nodeID]["text"]
+      }
       for(let i = 0; i < this.working_data[nodeID]["to"].length; i++){
+        let sortie_table = {}
         let sortieID = gen_sortieID.next().value
           sortie_table[sortieID] = {
             NOEUD_parent_id: nodeID,
@@ -163,10 +168,30 @@ class Data{
             sortie_table[sortieID]["note"][note] = this.working_data[nodeID]["to"][i][note] 
           }
         }
+        noeud_table[nodeID]["SORTIE_id"].push(sortie_table)
       }
     }
-    console.log(sortie_table)
-    let jsonstring = JSON.stringify(sortie_table, null, 2)
+    // let sortie_table = {}
+    // let gen_sortieID = idGenerator()
+    // for(let nodeID in this.working_data){
+    //   for(let i = 0; i < this.working_data[nodeID]["to"].length; i++){
+    //     let sortieID = gen_sortieID.next().value
+    //       sortie_table[sortieID] = {
+    //         NOEUD_parent_id: nodeID,
+    //         NOUEUD_destination_id: this.working_data[nodeID]["to"][i]["sortie"],
+    //         fin:SORTIES_INV.includes(this.working_data[nodeID]["to"][i]["sortie"]),
+    //         sortie_choix_libre: this.working_data[nodeID]["to"][i]["sortie_choix_libre"],
+    //         note:{}
+    //       }
+    //     for(let note in this.working_data[nodeID]["to"][i]){
+    //       if(note!="sortie" && note!="sortie_choix_libre" && this.working_data[nodeID]["to"][i][note]){
+    //         sortie_table[sortieID]["note"][note] = this.working_data[nodeID]["to"][i][note] 
+    //       }
+    //     }
+    //   }
+    // }
+    console.log(noeud_table)
+    let jsonstring = JSON.stringify(noeud_table, null, 2)
     let json_table_sortie = new Blob([jsonstring], { type: 'application/json' });
     const url = URL.createObjectURL(json_table_sortie);
     const a = document.createElement('a');
