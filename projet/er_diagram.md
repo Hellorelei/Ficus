@@ -11,25 +11,25 @@ title: JSON
 erDiagram
 JSON {
     string nom PK
-    string[] listeNotes
+    string[] listeNotes "Liste des entêtes de notes utilisées dans le document (action, commentaire, etc.)."
     dict dictCategories_CATEGORIE_nom FK
     dict dictNoeuds_NOEUD_id FK
 }
 JSON ||--|{ NOEUD : "1 JSON contient [1..n] NOEUD"
 JSON ||--|{ CATEGORIE : "1 JSON contient [1..n] CATEGORIE"
 CATEGORIE {
-    string nom PK, UK
-    dict dictVariables_VARIABLE_nom FK
+    string nom PK, UK "Nom de la catégorie: 'action', 'objet_acquis', etc."
+    dict dictVariables_VARIABLE_nom FK "Variables groupées dans la catégorie."
 }
 CATEGORIE ||--|{ VARIABLE : "1 CATEGORIE contient [1..n] VARIABLE"
 VARIABLE {
-    string nom PK, UK
-    string[] listeSorties_SORTIE_id FK
+    string nom PK, UK "'Monstre des âbimes', 'pistolet', etc."
+    string[] listeSorties_SORTIE_id FK "Liste des sorties contenant la variable."
 }
 NOEUD {
     string id PK, UK "Clé du NOEUD dans le dictionnaire des NOEUDs."
     dict dictSorties_SORTIE_id FK "SORTIEs appartenant au NOEUD."
-    string contenu_texte "Texte du passage d'après le PDF importé par l'user."
+    string contenuTexte "Texte du passage d'après le PDF importé par l'user."
 }
 SORTIE |o--|| NOEUD : "1 NOEUD contient [1..n] SORTIEs"
 SORTIE ||--o{ NOEUD : "1 SORTIE envoie vers [0..n] NOEUDs"
@@ -38,13 +38,13 @@ SORTIE {
     string parentId_NOEUD_id FK "NOEUD parent de la SORTIE."
     string destinationId_NOEUD_id FK "NOEUD destination de la SORTIE."
     bool fin "Indique s'il s'agit d'une fin plutôt que d'une sortie."
-    int sortie_choix_libre "Degré de liberté de la SORTIE [0-2]."
+    int sortieChoixLibre "Degré de liberté de la SORTIE [0-2]."
     dict dictNotes_NOTE_titre FK "NOTEs liées à la SORTIE."
 }
 NOTE }o--|| SORTIE : "1 SORTIE contient [0..n] NOTEs"
 NOTE {
-    string titre PK, UK
-    list valeur
+    string titre PK, UK "'action', 'objet acquis'."
+    list valeur "'pistolet'."
 }
 
 ```
