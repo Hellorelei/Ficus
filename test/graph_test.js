@@ -16,6 +16,15 @@ class passageTag{
 }
 
 class Data{
+  /**
+   * A class used in the optic of grouping all informations needed for treating the
+   * Interactive Fiction and display the corresponding graph
+   * @param {Object} param0
+   * @param {String} param1
+   * @param {Blob} param2
+   * @param {String} param3
+   * @param {Blob} param4
+   */
   constructor({working_data={}, entry_pdf_name="", PDF=Blob, entry_csv_name="", CSV=Blob}={}){
     this.working_data = working_data
     this.entry_pdf_name = entry_pdf_name
@@ -24,6 +33,13 @@ class Data{
     this.CSV = CSV
   }
 
+  /**
+   * Used for editing a certain part of the working_data dict
+   * @param {String} target 
+   * @param {String} variable 
+   * @param {String} value 
+   * @param {Boolean} flood 
+   */
   edit(target, variable, value, flood=false){
     if(flood){
       this.working_data[target]["tags"][variable]["value"] = value
@@ -33,6 +49,11 @@ class Data{
     }
   }
 
+  /**
+   * Change a CSV (string) into a data set (dictionnary) usable by Ficus
+   * @param {String} text_csv 
+   * @returns {Object}
+   */
   importCSV(text_csv){
     let papa_results = ""
     Papa.parse(text_csv, {
@@ -78,11 +99,20 @@ class Data{
     return results;
   }
 
+  /**
+   * Import text from a PDF and slice it by chapter, then add each chapter's text to its corresponding node in working_data
+   * @returns 
+   */
   importPDF(){
     console.log("Fonction d'import de PDF à effectuer")
     return null
   }
 
+  /**
+   * Import a file and depending on his type (.csv or .pdf) calls a different fonction
+   * @param {String} filename 
+   * @returns 
+   */
   async import(filename){
     try {
       let response = await fetch(filename);
@@ -115,10 +145,47 @@ class Data{
     }
   }
 
+  toJSON(){
+    let sortie_table = {}
+    let gen_sortieID = idGenerator()
+    for(let nodeID in this.working_data){
+      for(let i = 0; i < this.working_data[nodeID]["to"].length; i++){
+        let sortieID = gen_sortieID.next().value
+          sortie_table[sortieID] = {
+            NOEUD_parent_id: nodeID,
+            NOUEUD_destination_id: this.working_data[nodeID]["to"][i]["sortie"],
+            fin:SORTIES_INV.includes(this.working_data[nodeID]["to"][i]["sortie"]),
+            sortie_choix_libre: this.working_data[nodeID]["to"][i]["sortie_choix_libre"],
+            note:{}
+          }
+        for(let note in this.working_data[nodeID]["to"][i]){
+          if(note!="sortie" && note!="sortie_choix_libre" && this.working_data[nodeID]["to"][i][note]){
+            sortie_table[sortieID]["note"][note] = this.working_data[nodeID]["to"][i][note] 
+          }
+        }
+      }
+    }
+    console.log(sortie_table)
+    let jsonstring = JSON.stringify(sortie_table, null, 2)
+    let json_table_sortie = new Blob([jsonstring], { type: 'application/json' });
+    const url = URL.createObjectURL(json_table_sortie);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = "nomFichier";
+
+    // Déclencher le téléchargement
+    document.body.appendChild(a);
+    a.click();
+
+    // Nettoyer
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
   export(){
     // Fonction pour échapper les valeurs contenant des virgules et faussant le csv sinon
     function escapeCSVValue(value) {
-      // Si ce n'est pas une string, on retourne la valeur telle quelle
+      // Si ce n'est pas un string, on retourne la valeur telle quelle
       if (typeof value !== 'string') return value;
       
       // Si la valeur est déjà entourée de guillemets, on la retourne telle quelle
@@ -167,18 +234,10 @@ class Data{
     const objUrl = URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.setAttribute('href', objUrl)
-    link.setAttribute('download', 'File.csv')
+    link.setAttribute('download', `${OBJ_TEST.entry_csv_name}`)
     link.textContent = 'Click to Download'
     
-    // Trouver l'élément avec l'ID 'downloadCSV' et y ajouter le lien
-    const downloadCSVButton = document.getElementById('downloadCSV');
-    if (downloadCSVButton) {
-      downloadCSVButton.addEventListener('click', () => {
-        link.click();  // Simuler le clic sur le lien pour télécharger
-      });
-    }
-    
-    return csv_txt
+    return link
     
   }
 }
@@ -197,8 +256,16 @@ class Graph{
     this.layout({name:layout}).run()
   }
 }
+
 function refresh(layout="cose"){
   cy_graph.layout({name:layout}).run()
+}
+
+function* idGenerator(start=0){
+  let id = start
+  while(true){
+    yield id++;
+  }
 }
 
 function initNodeSearch() {
@@ -662,9 +729,14 @@ document.addEventListener("DOMContentLoaded", function () {
   const progressBar = document.querySelector(".progress-bar");
   const numInput = document.getElementById("csvColumns");
   const refreshBtn = document.getElementById("refreshBtn")
+  const downloadCSVButton = document.getElementById('downloadCSV');
 
   let importedCSV = null; // Variable pour stocker le fichier CSV
 
+  downloadCSVButton.addEventListener('click', () => {
+    let link = OBJ_TEST.export();  // Simuler le clic sur le lien pour télécharger
+    link.click()
+  });
   openBtn.addEventListener("click", () => {
     if(!isImportating){
       modal.style.display = "flex"
@@ -708,12 +780,13 @@ document.addEventListener("DOMContentLoaded", function () {
         createGraphe(file.name).then(()=>{          
           setTimeout(() => {
             progressBar.style.width = "89%";
-            progressBar.innerHTML = "89%"
-            setTimeout(() => {
+            progressBar.innerHTML = "89%";
+            cy_graph.on("layoutstop", ()=>{
+              console.log("CSV chargé et graphe mis en place")
               progressBar.style.width = "100%";
               progressBar.innerHTML = "100%"
               isImportating = false
-            }, 4000);
+            })
           }, 4000);
         })
       } else {
