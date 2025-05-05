@@ -11,35 +11,35 @@ title: JSON
 erDiagram
 JSON {
     string nom PK
-    string[] liste_notes
-    dict dict_categories FK
-    dict[] liste_noeuds FK
+    string[] listeNotes
+    dict dictCategories_CATEGORIE_nom FK
+    dict dictNoeuds_NOEUD_id FK
 }
 JSON ||--|{ NOEUD : "1 JSON contient [1..n] NOEUD"
 JSON ||--|{ CATEGORIE : "1 JSON contient [1..n] CATEGORIE"
 CATEGORIE {
     string nom PK, UK
-    string[] variables FK
+    dict dictVariables_VARIABLE_nom FK
 }
 CATEGORIE ||--|{ VARIABLE : "1 CATEGORIE contient [1..n] VARIABLE"
 VARIABLE {
     string nom PK, UK
-    int[] sorties FK
+    string[] listeSorties_SORTIE_id FK
 }
 NOEUD {
-    int id PK, UK "Index du NOEUD dans la liste des NOEUDs."
-    int[] SORTIE_id FK "SORTIEs appartenant au NOEUD."
+    string id PK, UK "Clé du NOEUD dans le dictionnaire des NOEUDs."
+    dict dictSorties_SORTIE_id FK "SORTIEs appartenant au NOEUD."
     string contenu_texte "Texte du passage d'après le PDF importé par l'user."
 }
 SORTIE |o--|| NOEUD : "1 NOEUD contient [1..n] SORTIEs"
 SORTIE ||--o{ NOEUD : "1 SORTIE envoie vers [0..n] NOEUDs"
 SORTIE {
-    int id PK, UK "Index de la SORTIE dans la liste des SORTIEs."
-    int NOEUD_parent_id FK "NOEUD parent de la SORTIE."
-    int NOEUD_destination_id FK "NOEUD destination de la SORTIE."
+    string id PK, UK "Clé de la SORTIE dans le dictionnaire des SORTIEs."
+    string parentId_NOEUD_id FK "NOEUD parent de la SORTIE."
+    string destinationId_NOEUD_id FK "NOEUD destination de la SORTIE."
     bool fin "Indique s'il s'agit d'une fin plutôt que d'une sortie."
     int sortie_choix_libre "Degré de liberté de la SORTIE [0-2]."
-    dict notes FK "NOTEs liées à la SORTIE."
+    dict dictNotes_NOTE_titre FK "NOTEs liées à la SORTIE."
 }
 NOTE }o--|| SORTIE : "1 SORTIE contient [0..n] NOTEs"
 NOTE {
@@ -49,6 +49,7 @@ NOTE {
 
 ```
 
+——Outdated.
 ```json
 {
     "document": {
