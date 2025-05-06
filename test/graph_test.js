@@ -146,31 +146,45 @@ class Data{
   }
 
   toJSON(){
+    let json_table = {
+      nom: this.entry_csv_name.split('.')[0],
+      liste_notes:[],
+      dict_categories : {},
+    }
     let noeud_table = {}
     let gen_sortieID = idGenerator()
     for(let nodeID in this.working_data){
       noeud_table[nodeID]={
-        SORTIE_id: [],
-        contenu_texte: this.working_data[nodeID]["text"]
+        id: nodeID,
+        contenu_texte: this.working_data[nodeID]["text"],
+        SORTIE_id: {}
       }
       for(let i = 0; i < this.working_data[nodeID]["to"].length; i++){
-        let sortie_table = {}
         let sortieID = gen_sortieID.next().value
-          sortie_table[sortieID] = {
-            NOEUD_parent_id: nodeID,
-            NOUEUD_destination_id: this.working_data[nodeID]["to"][i]["sortie"],
-            fin:SORTIES_INV.includes(this.working_data[nodeID]["to"][i]["sortie"]),
-            sortie_choix_libre: this.working_data[nodeID]["to"][i]["sortie_choix_libre"],
-            note:{}
-          }
+        noeud_table[nodeID]["SORTIE_id"][sortieID] = {
+          id: sortieID,
+          NOEUD_parent_id: nodeID,
+          NOUEUD_destination_id: this.working_data[nodeID]["to"][i]["sortie"],
+          fin:SORTIES_INV.includes(this.working_data[nodeID]["to"][i]["sortie"]),
+          sortie_choix_libre: this.working_data[nodeID]["to"][i]["sortie_choix_libre"],
+          note:{}
+        }
+        if(SORTIES_INV.includes(this.working_data[nodeID]["to"][i]["sortie"])){
+          noeud_table[nodeID]["SORTIE_id"][sortieID]["note"]["fin_type"] = this.working_data[nodeID]["to"][i]["sortie"]
+        }
         for(let note in this.working_data[nodeID]["to"][i]){
           if(note!="sortie" && note!="sortie_choix_libre" && this.working_data[nodeID]["to"][i][note]){
-            sortie_table[sortieID]["note"][note] = this.working_data[nodeID]["to"][i][note] 
+            noeud_table[nodeID]["SORTIE_id"][sortieID]["note"][note] = this.working_data[nodeID]["to"][i][note] 
           }
         }
-        noeud_table[nodeID]["SORTIE_id"].push(sortie_table)
       }
     }
+    for(let note in this.working_data[1]["to"][0]){
+      if(note!="sortie" && note!="sortie_choix_libre"){
+        json_table["liste_notes"].push(note)
+      }
+    }
+    json_table["dict_noeuds"] = noeud_table
     // let sortie_table = {}
     // let gen_sortieID = idGenerator()
     // for(let nodeID in this.working_data){
@@ -190,13 +204,12 @@ class Data{
     //     }
     //   }
     // }
-    console.log(noeud_table)
-    let jsonstring = JSON.stringify(noeud_table, null, 2)
+    let jsonstring = JSON.stringify(json_table, null, 2)
     let json_table_sortie = new Blob([jsonstring], { type: 'application/json' });
     const url = URL.createObjectURL(json_table_sortie);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `table_noeud_${this.entry_csv_name}`;
+    a.download = `table_noeud_${this.entry_csv_name.split('.')[0]}`;
     console.log(noeud_table[1])
 
     // Déclencher le téléchargement
