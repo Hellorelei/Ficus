@@ -196,7 +196,8 @@ class Data{
     const url = URL.createObjectURL(json_table_sortie);
     const a = document.createElement('a');
     a.href = url;
-    a.download = "nomFichier";
+    a.download = `table_noeud_${this.entry_csv_name}`;
+    console.log(noeud_table[1])
 
     // Déclencher le téléchargement
     document.body.appendChild(a);
