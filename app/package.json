@@ -1,0 +1,15 @@
+{
+  "name": "ficus",
+  "version": "1.0.0",
+  "main": "main.js",
+  "author": "Colin Luginbühl, Lorelei Chevroulet, Matthias Borgeaud",
+  "license": "MIT",
+  "private": true,
+  "devDependencies": {
+    "electron": "^36.2.0"
+  },
+    "scripts": {
+    "start": "electron .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
