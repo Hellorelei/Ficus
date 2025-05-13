@@ -18,7 +18,7 @@ class passageTag{
 class Data{
   /**
    * A class used in the optic of grouping all informations needed for treating the
-   * Interactive Fiction and display the corresponding graph
+   * Interactive Fiction and displaying the corresponding graph
    * @param {Object} param0
    * @param {String} param1
    * @param {Blob} param2
@@ -82,16 +82,33 @@ class Data{
           tags: { biomes: {}, personnages: {}, actions: {} }
         };
       }
-
+      let newExit = {}
       if(obj.numero_passage){
         lastValidId = obj.numero_passage
         // let added_tags = {"biomes":"", "personnages":"", "actions":""}
-        for(let l in Object.fromEntries(Object.entries(obj).slice(LAST_DEFAULT_TAG, 100))){
-          results[id].tags[l] = {"value" : obj[l], "entry" : Boolean(obj[l])}
+        for(let [key, value] of Object.entries(obj)){
+          // Skip la première colonne (numero_passage)
+          if (key === Object.keys(obj)[0]) continue;
+          //récupère les tags des passages...
+          if(key.includes("ficusTag_")){
+            let cleanTagName = key.replace("ficusTag_", "")
+            results[id].tags[cleanTagName] = {"value" : value, "entry" : Boolean(value)}
+          }else{
+            //... et ceux des sorties
+            newExit[key] = value
+          }
         }
-        results[id]["to"].push(Object.fromEntries(Object.entries(obj).slice(1, LAST_DEFAULT_TAG)))
+        results[id]["to"].push(newExit)
       }else{
-        results[id]["to"].push(Object.fromEntries(Object.entries(obj).slice(1, LAST_DEFAULT_TAG)))
+        for(let [key, value] of Object.entries(obj)){
+          // Skip la première colonne (numero_passage)
+          if (key === Object.keys(obj)[0]) continue;
+          //récupère les tags des sorties uniquement (pas de tags de passage)
+          if(!key.includes("ficusTag_")){
+            newExit[key] = value
+          }
+        }
+        results[id]["to"].push(newExit)
       }
     }
     console.log(results)
@@ -243,7 +260,7 @@ class Data{
     const first_key = Object.keys(this.working_data)[0]
     let csv_array = [["numero_passage",]]
     csv_array[0] = csv_array[0].concat(Object.keys(this.working_data[first_key]["to"][0]))
-    csv_array[0] = csv_array[0].concat(Object.keys(this.working_data[first_key]["tags"]))
+    csv_array[0] = csv_array[0].concat(Object.keys(this.working_data[first_key]["tags"]).map(tag=> "ficusTag_"+tag))
     // loop sur l'objet de données
     for(let passage in this.working_data){
       // loop sur les sorties / lignes
