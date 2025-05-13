@@ -120,9 +120,42 @@ class Data{
    * Import text from a PDF and slice it by chapter, then add each chapter's text to its corresponding node in working_data
    * @returns 
    */
-  importPDF(){
-    console.log("Fonction d'import de PDF à effectuer")
-    return null
+  async importPDF(){
+    const pdfjsLib = window['pdfjs-dist/build/pdf'];
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 
+      'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.6.347/pdf.worker.min.js';
+    const pdf = await pdfjsLib.getDocument(URL.createObjectURL(this.PDF)).promise;
+    let bookString = ""
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      let txt = await page.getTextContent();
+      bookString += txt.items.map((s)=>s.str).join("\n")
+    }
+    // const regex_sep = new RegExp("(?<=\n)\s*(\d+)\s*\n", "g")
+    const regex_sep = /(?<=\n)\s*(\d+)\s*\n/g
+    let matching_passage = [...bookString.matchAll(regex_sep)]
+    let i = 0;
+    while (i < matching_passage.length) {
+        if (i + 1 !== Number(matching_passage[i][1])) {
+            console.log(`Index ${i} is not matching with value ${matching_passage[i][1]}`);
+            console.log(`Element popped: ${matching_passage.splice(i, 1)}`);
+            // Ne pas incrémenter i car on vient de supprimer un élément
+        } else {
+            i++; // Passer à l'élément suivant seulement si pas de suppression
+        }
+    }
+    const passages = {};
+    for (const [index, value] of matching_passage.entries()) {
+        let regex_text;
+        if (index !== matching_passage.length - 1) {
+            regex_text = new RegExp(`(?<=\\n)\\s*${value[1]}\\s*\\n((?:.+\\n)+?)\\s*${Number(value[1])+1}`);
+        } else {
+            regex_text = new RegExp(`(?<=\\n)\\s*${value[1]}\\s+((?:.+\\n)+)\\s*\\d*\\s+`);
+        }
+        const match = bookString.match(regex_text);
+        this.working_data[value[1]]["text"] =  match?.[1] || ""
+    }
+
   }
 
   /**
@@ -781,6 +814,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const closeBtn = document.querySelector(".close-btn");
   const closeCross = document.querySelector(".btn-close");
   const fileInput = document.getElementById("csvFile");
+  let pdfInput = document.getElementById("pdfFile");
   const progress = document.querySelector(".progress");
   const progressBar = document.querySelector(".progress-bar");
   const numInput = document.getElementById("csvColumns");
@@ -847,6 +881,21 @@ document.addEventListener("DOMContentLoaded", function () {
         })
       } else {
           alert("Veuillez sélectionner un fichier CSV valide !");
+          fileInput.value = ""; // Réinitialiser l'input si le fichier n'est pas un CSV
+      }
+  });
+  pdfInput.addEventListener("change", (event) => {
+    isImportating = true
+      const file = event.target.files[0]; // Récupérer le fichier sélectionné
+      if (file && file.type === "application/pdf") {
+        // modal.style.display = "none"
+        importedPDF = URL.createObjectURL(file); // Générer une URL temporaire du fichier
+        console.log("Fichier PDF chargé :", importedPDF, file.name);
+        setTimeout(() => {
+          OBJ_TEST.import(file.name)
+        }, 100);
+      } else {
+          alert("Veuillez sélectionner un fichier PDF valide !");
           fileInput.value = ""; // Réinitialiser l'input si le fichier n'est pas un CSV
       }
   });
