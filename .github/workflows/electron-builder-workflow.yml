@@ -7,7 +7,7 @@ on:
       package_root:
       description: Directory where NPM/Yarn commands should be run
       required: false
-      default: "."
+      default: "app/"
 
 jobs:
   release:
