@@ -22,7 +22,5 @@
       "category": "your.app.category.type"
     }
   },
-  "repository": {
-    "directory": "."
-  }
+  "repository": "github:colinlug/ficus"
 }
