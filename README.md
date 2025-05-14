@@ -22,7 +22,8 @@ Ces données sont ensuite exportables au même format CSV.
 
 ## INSTALLATION
 
-*Les instructions d'installation viennent ici.*
+1. Télécharger l'application depuis l'onglet _releases_.
+2. Lancer l'application.
 
 ## AUTRES
 
