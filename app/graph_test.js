@@ -125,36 +125,71 @@ class Data{
     pdfjsLib.GlobalWorkerOptions.workerSrc = 
       'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.6.347/pdf.worker.min.js';
     const pdf = await pdfjsLib.getDocument(URL.createObjectURL(this.PDF)).promise;
-    let bookString = ""
+    let bookString=""
     for (let i = 1; i <= pdf.numPages; i++) {
       const page = await pdf.getPage(i);
-      let txt = await page.getTextContent();
-      bookString += txt.items.map((s)=>s.str).join("\n")
+      const textContent = await page.getTextContent();
+      
+      // reconstruction des retours à la ligne
+      let pageText = "";
+      let lastY = null;
+      
+      // Les pdfs contiennent des items dont la propriété .transform renvoie une matrice PDF Matrix :
+      // l'index 5 est la position sur l'axe Y de l'item dans le pdf
+      textContent.items.forEach((item) => {
+        // Nouvelle ligne si la position Y change significativement
+        if (lastY !== null && Math.abs(lastY - item.transform[5]) > 5) {
+          pageText += "\n";
+        }
+        pageText += item.str;
+        lastY = item.transform[5];
+      });
+      
+      bookString += pageText + "\n"; // == saut de page
     }
     // const regex_sep = new RegExp("(?<=\n)\s*(\d+)\s*\n", "g")
-    const regex_sep = /(?<=\n)\s*(\d+)\s*\n/g
+    const regex_sep = /(?=\n)\s+(\d+)\s+/g
     let matching_passage = [...bookString.matchAll(regex_sep)]
-    let i = 0;
-    while (i < matching_passage.length) {
-        if (i + 1 !== Number(matching_passage[i][1])) {
-            console.log(`Index ${i} is not matching with value ${matching_passage[i][1]}`);
-            console.log(`Element popped: ${matching_passage.splice(i, 1)}`);
-            // Ne pas incrémenter i car on vient de supprimer un élément
-        } else {
-            i++; // Passer à l'élément suivant seulement si pas de suppression
-        }
+    console.log(matching_passage)
+    let max_index = 0
+    for(const [index, value] of matching_passage.entries()){
+      max_index = Math.max(max_index, value[1])
     }
-    const passages = {};
-    for (const [index, value] of matching_passage.entries()) {
-        let regex_text;
-        if (index !== matching_passage.length - 1) {
-            regex_text = new RegExp(`(?<=\\n)\\s*${value[1]}\\s*\\n((?:.+\\n)+?)\\s*${Number(value[1])+1}`);
-        } else {
-            regex_text = new RegExp(`(?<=\\n)\\s*${value[1]}\\s+((?:.+\\n)+)\\s*\\d*\\s+`);
-        }
-        const match = bookString.match(regex_text);
-        this.working_data[value[1]]["text"] =  match?.[1] || ""
+    const passage = {};
+    for(let i = 1; i<=max_index;i++){
+      let regex_text
+      if (i !== max_index) {
+        regex_text = new RegExp(`(?<=\\n)\\s*${i}\\s*\\n((.+\\n)+?)\\s*${i+1}`);
+      }else {
+        regex_text = new RegExp(`(?<=${i})\\s+((?:.+\\n){0,300})\\s*\\d*\\s+`);
+      }
+      const match = bookString.match(regex_text)
+      this.working_data[i]["text"] =  match?.[1] || ""
     }
+    // const regex_sep = /\s*(\d+)\s*/g
+    // let matching_passage = [...bookString.matchAll(regex_sep)]
+    // console.log(matching_passage)
+    // let i = 0;
+    // while (i < matching_passage.length) {
+    //     if (i + 1 !== Number(matching_passage[i][1])) {
+    //         console.log(`Index ${i} is not matching with value ${matching_passage[i][1]}`);
+    //         console.log(`Element popped: ${matching_passage.splice(i, 1)}`);
+    //         // Ne pas incrémenter i car on vient de supprimer un élément
+    //     } else {
+    //         i++; // Passer à l'élément suivant seulement si pas de suppression
+    //     }
+    // }
+    // const passages = {};
+    // for (const [index, value] of matching_passage.entries()) {
+    //     let regex_text;
+    //     if (index !== matching_passage.length - 1) {
+    //         regex_text = new RegExp(`(?<=\\n)\\s*${value[1]}\\s*\\n((?:.+\\n)+?)\\s*${Number(value[1])+1}`);
+    //     } else {
+    //         regex_text = new RegExp(`(?<=\\n)\\s*${value[1]}\\s+((?:.+\\n)+)\\s*\\d*\\s+`);
+    //     }
+    //     const match = bookString.match(regex_text);
+    //     this.working_data[value[1]]["text"] =  match?.[1] || ""
+    // }
 
   }
 
